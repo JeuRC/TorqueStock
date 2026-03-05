@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - TorqueStock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Configuración de los colores corporativos basados en tu mockup
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#d91b1b', // Rojo Torque Bikers
+                        darkBg: '#0f0f0f',   // Fondo principal
+                        cardBg: '#2a2a2a',   // Fondo de la tarjeta
+                        inputBg: '#333333'   // Fondo de los inputs
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            /* Aquí podrás agregar la imagen de los engranajes de fondo más adelante guardándola en static/img/fondo.jpg */
+            background-color: #0f0f0f; 
+        }
+        /* Efecto de luz alrededor del botón */
+        .glow-button {
+            box-shadow: 0 0 15px rgba(217, 27, 27, 0.5);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 25px rgba(217, 27, 27, 0.9);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center text-white relative">
+
+    <div class="bg-cardBg p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border border-gray-700">
+        
+        <div class="text-center mb-8">
+            <div class="flex justify-center items-center gap-2 mb-1">
+                <i class="fa-solid fa-gear text-brandRed text-3xl"></i>
+                <h1 class="text-2xl font-bold tracking-tight">
+                    <span class="text-brandRed">TORQUE</span> BIKERS
+                </h1>
+            </div>
+            <p class="text-gray-400 text-xs mb-4">Sistema de Gestión de Inventario</p>
+            <h2 class="text-2xl font-normal mt-2">Iniciar Sesión</h2>
+        </div>
+
+        <form action="/login" method="POST" class="space-y-5">
+            
+            <div>
+                <label class="block text-xs text-gray-300 mb-1">Nombre de Usuario</label>
+                <div class="relative flex items-center">
+                    <div class="absolute left-0 w-10 flex justify-center border-r border-gray-600">
+                        <i class="fa-regular fa-user text-brandRed"></i>
+                    </div>
+                    <input type="email" name="username" placeholder="usuario@torquebikers.com" required
+                        class="w-full bg-transparent text-gray-300 border border-gray-600 rounded p-2 pl-12 text-sm focus:outline-none focus:border-brandRed">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-300 mb-1">Contraseña</label>
+                <div class="relative flex items-center">
+                    <div class="absolute left-0 w-10 flex justify-center border-r border-gray-600">
+                        <i class="fa-solid fa-lock text-brandRed"></i>
+                    </div>
+                    <input type="password" id="password" name="password" placeholder="********" required
+                        class="w-full bg-transparent text-gray-300 border border-gray-600 rounded p-2 pl-12 pr-10 text-sm focus:outline-none focus:border-brandRed">
+                    <button type="button" onclick="togglePassword()" class="absolute right-3 text-brandRed opacity-70 hover:opacity-100 focus:outline-none">
+                        <i class="fa-regular fa-eye-slash" id="toggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center text-xs mt-2">
+                <label class="flex items-center text-gray-400 cursor-pointer hover:text-white">
+                    <input type="checkbox" class="mr-2 accent-brandRed rounded bg-transparent border-gray-600"> Recuérdame
+                </label>
+                <a href="#" class="text-brandRed hover:text-red-400">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button type="submit" class="w-full bg-brandRed text-white py-2.5 rounded font-medium text-base glow-button mt-4">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="text-center mt-6 text-xs text-gray-500">
+            <div class="mb-3">
+                <a href="#" class="text-brandRed hover:text-red-400">Crear Cuenta</a>
+                <span class="mx-1">|</span>
+                <a href="#" class="text-brandRed hover:text-red-400">Soporte Técnico</a>
+            </div>
+            <p>© TORQUE BIKERS 2026</p>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+</body>
+</html>

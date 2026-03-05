@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorías - TorqueStock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#d91b1b', 
+                        darkBg: '#0f0f0f',   
+                        sidebarBg: '#1a1a1a',
+                        cardBg: '#222222',   
+                        tableRowHover: '#2a2a2a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glow-button {
+            box-shadow: 0 0 10px rgba(217, 27, 27, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
+        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <h1 class="text-lg font-bold text-white tracking-wide">
+                <span class="text-brandRed">TORQUE</span> BIKERS
+            </h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-house w-6"></i> Inicio
+                    </a>
+                </li>
+                <li>
+                    <a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-box w-6"></i> Productos
+                    </a>
+                </li>
+                <li>
+                    <a href="/categorias" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                        <i class="fa-solid fa-tags w-6"></i> Categorías
+                    </a>
+                </li>
+                <li>
+                    <a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-users w-6"></i> Proveedores
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-chart-bar w-6"></i> Reportes
+                    </a>
+                </li>
+                <li>
+                    <a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-gear w-6"></i> Configuración
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
+            <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+            <div class="flex items-center space-x-6">
+                <div class="text-sm text-gray-300">Admin</div>
+                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-user text-white"></i>
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8">
+            
+            <h2 class="text-2xl font-semibold text-white tracking-wide mb-6 uppercase">Gestión de Categorías</h2>
+            
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <button class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> AÑADIR NUEVA CATEGORÍA
+                    </button>
+                    <div class="relative hidden sm:block">
+                        <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                        <input type="text" placeholder="Buscar categoría..." class="bg-darkBg border border-gray-700 rounded py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-64">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-sm w-full md:w-auto justify-end">
+                    <span class="text-gray-400">Ordenar por</span>
+                    <select class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none focus:border-brandRed">
+                        <option>Nombre (A-Z)</option>
+                        <option>Nombre (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-5">
+                    <p class="text-sm text-gray-400 mb-1">Total Categorías</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.total_categorias }}</p>
+                </div>
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-5">
+                    <p class="text-sm text-gray-400 mb-1">Categoría Más Rentable</p>
+                    <p class="text-3xl font-bold text-brandRed">{{ resumen.mas_rentable }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ resumen.detalle_rentable }}</p>
+                </div>
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-5">
+                    <p class="text-sm text-gray-400 mb-1">Items con Stock Bajo por Categoría</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.cat_stock_bajo }}</p>
+                    <p class="text-xs text-brandRed mt-1">{{ resumen.items_stock_bajo }}</p>
+                </div>
+            </div>
+
+            <div class="bg-cardBg rounded border border-gray-800 p-5">
+                <h3 class="text-lg font-medium mb-4 text-white">Catálogo de Categorías</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-gray-700">
+                                <th class="pb-3 font-medium">ID</th>
+                                <th class="pb-3 font-medium">Nombre de la Categoría</th>
+                                <th class="pb-3 font-medium">Descripción</th>
+                                <th class="pb-3 font-medium">Cantidad de Productos</th>
+                                <th class="pb-3 font-medium">Valor Total</th>
+                                <th class="pb-3 font-medium">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in categorias %}
+                            <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
+                                <td class="py-4 text-gray-400">{{ cat.id }}</td>
+                                <td class="py-4 text-white">{{ cat.nombre }}</td>
+                                <td class="py-4">{{ cat.descripcion }}</td>
+                                <td class="py-4">
+                                    <span class="{{ 'text-brandRed' if cat.alerta else 'text-white' }}">
+                                        {{ cat.cantidad }} 
+                                        {% if cat.alerta %}
+                                            <i class="fa-solid fa-arrow-down text-brandRed ml-1"></i>
+                                            <br><span class="text-xs bg-red-900/40 px-1 rounded">{{ cat.detalle_alerta }}</span>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="py-4 text-white">{{ cat.valor }}</td>
+                                <td class="py-4">
+                                    <div class="flex gap-3 text-gray-500">
+                                        <button class="hover:text-white transition-colors"><i class="fa-regular fa-pen-to-square"></i></button>
+                                        <button class="hover:text-brandRed transition-colors"><i class="fa-regular fa-trash-can"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-6">
+                <div class="flex items-center gap-1 bg-cardBg rounded border border-gray-800 p-1">
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-left text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-left text-xs"></i></button>
+                    <button class="px-3 py-1 bg-brandRed text-white rounded">1</button>
+                    <button class="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded">2</button>
+                    <button class="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded">3</button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-right text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-right text-xs"></i></button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

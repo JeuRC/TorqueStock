@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - TorqueStock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#d91b1b', 
+                        darkBg: '#0f0f0f',   
+                        sidebarBg: '#1a1a1a',
+                        cardBg: '#222222',   
+                        tableRowHover: '#2a2a2a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
+        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <h1 class="text-lg font-bold text-white tracking-wide">
+                <span class="text-brandRed">TORQUE</span> BIKERS
+            </h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-house w-6"></i> Inicio</a></li>
+                <li>
+                    <a href="/productos" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                        <i class="fa-solid fa-box w-6"></i> Productos
+                    </a>
+                </li>
+                <li><a href="/categorias" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-tags w-6"></i> Categorías</a></li>
+                <li><a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-users w-6"></i> Proveedores</a></li>
+                <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
+                <li><a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-gear w-6"></i> Configuración</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
+            <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+            <div class="flex items-center space-x-6">
+                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-user text-white"></i>
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8">
+            
+            <h2 class="text-2xl font-semibold text-white tracking-wide mb-6">Gestión de Productos</h2>
+            
+            <div class="flex flex-wrap justify-between items-end mb-6 gap-4">
+                <div class="flex items-center gap-4">
+                    <button class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium shadow-[0_0_10px_rgba(217,27,27,0.4)] flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Añadir Nuevo Producto
+                    </button>
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar" class="bg-darkBg border border-gray-700 rounded py-2 px-4 text-sm text-white focus:outline-none focus:border-brandRed w-64">
+                        <i class="fa-solid fa-search absolute right-3 top-2.5 text-gray-500 text-sm"></i>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Categoría</label>
+                        <select class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                            <option>Todas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Marca</label>
+                        <select class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                            <option>Todas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Estado</label>
+                        <select class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-4">
+                    <p class="text-sm text-gray-400 mb-1">Total Productos:</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.total }}</p>
+                </div>
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-4">
+                    <p class="text-sm text-gray-400 mb-1">Stock Bajo:</p>
+                    <p class="text-3xl font-bold text-brandRed">{{ resumen.stock_bajo }}</p>
+                </div>
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-4">
+                    <p class="text-sm text-gray-400 mb-1">Valor Total Inventario:</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.valor_total }}</p>
+                </div>
+                <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-4">
+                    <p class="text-sm text-gray-400 mb-1">Nuevas Adiciones (Este Mes)</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.nuevas_adiciones }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <div class="lg:col-span-3 bg-cardBg rounded border border-gray-800 p-5">
+                    <h3 class="text-lg font-medium mb-4 text-white">Catálogo de Productos</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-gray-400 border-b border-gray-700">
+                                    <th class="pb-3 font-medium">SKU</th>
+                                    <th class="pb-3 font-medium">Imagen</th>
+                                    <th class="pb-3 font-medium">Nombre del Producto</th>
+                                    <th class="pb-3 font-medium">Categoría</th>
+                                    <th class="pb-3 font-medium">Marca</th>
+                                    <th class="pb-3 font-medium">Stock</th>
+                                    <th class="pb-3 font-medium">Precio Venta</th>
+                                    <th class="pb-3 font-medium">Estado</th>
+                                    <th class="pb-3 font-medium text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in productos %}
+                                <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
+                                    <td class="py-3 text-gray-400">{{ item.sku }}</td>
+                                    <td class="py-3">
+                                        <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-box text-gray-500"></i>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 text-gray-300">{{ item.nombre }}</td>
+                                    <td class="py-3 text-gray-400">{{ item.categoria }}</td>
+                                    <td class="py-3 text-gray-400">{{ item.marca }}</td>
+                                    <td class="py-3 {{ 'text-brandRed' if item.stock <= 23 else 'text-white' }}">{{ item.stock }}</td>
+                                    <td class="py-3 text-white">{{ item.precio }}</td>
+                                    <td class="py-3 {{ 'text-gray-300' if item.estado == 'Activo' else 'text-brandRed' }}">{{ item.estado }}</td>
+                                    <td class="py-3">
+                                        <div class="flex justify-center gap-3 text-brandRed">
+                                            <button class="hover:text-red-400"><i class="fa-solid fa-pencil"></i></button>
+                                            <button class="hover:text-red-400"><i class="fa-regular fa-trash-can"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex justify-center mt-6">
+                        <div class="flex items-center gap-1 bg-darkBg rounded border border-gray-800 p-1">
+                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-left text-xs"></i></button>
+                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-left text-xs"></i></button>
+                            <button class="px-3 py-1 bg-brandRed text-white rounded">1</button>
+                            <button class="px-3 py-1 text-gray-400 hover:text-white rounded">2</button>
+                            <button class="px-3 py-1 text-gray-400 hover:text-white rounded">3</button>
+                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-right text-xs"></i></button>
+                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-right text-xs"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1 bg-cardBg border border-gray-800 rounded-lg p-5 flex flex-col">
+                    <h3 class="text-lg font-medium mb-4 text-white">Tendencia de Ventas<br><span class="text-sm font-normal text-gray-400">(Productos)</span></h3>
+                    <div class="relative flex-1 min-h-[300px] w-full mt-4">
+                        <canvas id="sideSalesChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('sideSalesChart').getContext('2d');
+            const dataValues = {{ ventas | tojson }};
+            
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(217, 27, 27, 0.4)');
+            gradient.addColorStop(1, 'rgba(217, 27, 27, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['May 23', '', '', '', 'May 23', '', '', '', 'Jul 23', '', ''],
+                    datasets: [{
+                        label: 'Ventas',
+                        data: dataValues,
+                        borderColor: '#d91b1b',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 600,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                            ticks: { color: '#666', font: {size: 10} }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#666', font: {size: 10} }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
