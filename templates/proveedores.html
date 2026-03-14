@@ -4,23 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proveedores - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
-    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proveedores.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/proveedores.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
@@ -58,6 +48,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos
+                    </a>
+                </li>
+                <li>
                     <a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
@@ -81,15 +76,18 @@
             </div>
         </header>
 
-        <div class="bg-brandRed text-white px-8 py-3 shadow-md flex justify-between items-center">
-            <h2 class="text-xl font-semibold">Proveedores</h2>
-            <button class="border border-white/50 hover:border-white hover:bg-white hover:text-brandRed text-white px-4 py-1.5 rounded transition-colors text-sm font-medium flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> Añadir Nuevo Proveedor
-            </button>
+        <div class="bg-brandRed text-white px-8 py-3 shadow-md">
+            <h2 class="text-xl font-semibold">Gestión de Proveedores</h2>
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
             
+            <div class="flex justify-start mb-6">
+                <button class="font-semibold bg-brandRed hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(217,27,27,0.4)] hover:shadow-[0_0_20px_rgba(217,27,27,0.8)]">
+                    <i class="fa-solid fa-plus"></i> Añadir Nuevo Proveedor
+                </button>
+            </div>
+
             <div class="flex flex-col lg:flex-row gap-4 mb-6">
                 <div class="flex flex-1">
                     <input type="text" placeholder="Buscar proveedores" class="w-full bg-cardBg border border-gray-700 rounded-l py-2 px-4 text-sm focus:outline-none text-white">
@@ -112,7 +110,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
                     <div>
                         <p class="text-xs text-gray-400 mb-1">Total Proveedores</p>
@@ -131,24 +129,6 @@
                         <i class="fa-regular fa-user text-sm"></i>
                     </div>
                 </div>
-                <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs text-gray-400 mb-1">Órdenes Críticas <br><span class="text-gray-500">(de proveedores)</span></p>
-                        <p class="text-3xl font-bold text-brandRed">{{ resumen.ordenes_criticas }}</p>
-                    </div>
-                    <div class="w-8 h-8 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/20">
-                        <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                    </div>
-                </div>
-                <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs text-gray-400 mb-1">Próximas Entregas <br><span class="text-gray-500">(este mes)</span></p>
-                        <p class="text-3xl font-bold text-brandRed">{{ resumen.proximas_entregas }}</p>
-                    </div>
-                    <div class="w-8 h-8 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/20">
-                        <i class="fa-regular fa-calendar-days text-sm"></i>
-                    </div>
-                </div>
             </div>
 
             <div class="bg-cardBg rounded border border-gray-800 p-5">
@@ -162,7 +142,6 @@
                                 <th class="pb-3 font-medium">Correo</th>
                                 <th class="pb-3 font-medium">Teléfono</th>
                                 <th class="pb-3 font-medium">Suministro Principal</th>
-                                <th class="pb-3 font-medium">Última Orden</th>
                                 <th class="pb-3 font-medium">Estado</th>
                                 <th class="pb-3 font-medium text-center">Acciones</th>
                             </tr>
@@ -175,7 +154,6 @@
                                 <td class="py-4">{{ prov.correo }}</td>
                                 <td class="py-4">{{ prov.telefono }}</td>
                                 <td class="py-4">{{ prov.suministro }}</td>
-                                <td class="py-4">{{ prov.ultima_orden }}</td>
                                 <td class="py-4">
                                     {% if prov.estado == 'Activo' %}
                                     <span class="bg-green-600/20 text-green-500 px-2 py-1 rounded text-xs border border-green-600/30">{{ prov.estado }}</span>

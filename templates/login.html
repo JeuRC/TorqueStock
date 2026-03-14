@@ -4,49 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script>
-        // Configuración de los colores corporativos basados en tu mockup
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', // Rojo Torque Bikers
-                        darkBg: '#0f0f0f',   // Fondo principal
-                        cardBg: '#2a2a2a',   // Fondo de la tarjeta
-                        inputBg: '#333333'   // Fondo de los inputs
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            /* Aquí podrás agregar la imagen de los engranajes de fondo más adelante guardándola en static/img/fondo.jpg */
-            background-color: #0f0f0f; 
-        }
-        /* Efecto de luz alrededor del botón */
-        .glow-button {
-            box-shadow: 0 0 15px rgba(217, 27, 27, 0.5);
-            transition: all 0.3s ease;
-        }
-        .glow-button:hover {
-            box-shadow: 0 0 25px rgba(217, 27, 27, 0.9);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center text-white relative">
 
     <div class="bg-cardBg p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border border-gray-700">
         
         <div class="text-center mb-8">
-            <div class="flex justify-center items-center gap-2 mb-1">
-                <i class="fa-solid fa-gear text-brandRed text-3xl"></i>
-                <h1 class="text-2xl font-bold tracking-tight">
-                    <span class="text-brandRed">TORQUE</span> BIKERS
-                </h1>
+            <div class="flex justify-center items-center mb-4">
+                <img src="{{ url_for('static', filename='img/Logo.png') }}" 
+                alt="Logo Torque Bikers"
+                class="h-32 object-contain">
             </div>
             <p class="text-gray-400 text-xs mb-4">Sistema de Gestión de Inventario</p>
             <h2 class="text-2xl font-normal mt-2">Iniciar Sesión</h2>
@@ -101,21 +75,5 @@
         </div>
     </div>
 
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            }
-        }
-    </script>
 </body>
 </html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimientos - TorqueStock</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/movimientos.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/movimientos.js') }}"></script>
+</head>
+<body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
+        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <h1 class="text-lg font-bold text-white tracking-wide">
+                <span class="text-brandRed">TORQUE</span> BIKERS
+            </h1>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-house w-6"></i> Inicio
+                    </a>
+                </li>
+                <li>
+                    <a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-box w-6"></i> Productos
+                    </a>
+                </li>
+                <li>
+                    <a href="/categorias" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-tags w-6"></i> Categorías
+                    </a>
+                </li>
+                <li>
+                    <a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-users w-6"></i> Proveedores
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-chart-bar w-6"></i> Reportes
+                    </a>
+                </li>
+                <li>
+                    <a href="/movimientos" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                        <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos    
+                    </a>
+                </li>
+                <li>
+                    <a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-gear w-6"></i> Configuración
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+    <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
+        <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div> 
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-64">
+                </div>
+                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-500">
+                    <i class="fa-solid fa-user text-white"></i>
+                </div>
+            </div>
+        </header>
+
+    <div class="bg-brandRed text-white px-8 py-3 shadow-md">
+        <h2 class="text-xl font-semibold">Movimientos de Inventario</h2>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-8">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-medium">Registrar Movimiento</h3>
+                <div class="flex space-x-4">
+                    <button onclick="openModal('registrarProductoModal')" class="font-semibold bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
+                        <i class="fa-solid fa-plus-circle mr-2 "></i>Añadir Nuevo Producto
+                    </button>
+                    
+                    <button onclick="openModal('ingresoModal')" class="font-semibold bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
+                        <i class="fa-solid fa-truck mr-2"></i>Ingreso
+                    </button>
+                    
+                    <button onclick="openModal('salidaModal')" class="font-semibold bg-brandRed hover:bg-red-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
+                        <i class="fa-solid fa-shopping-cart mr-2"></i>Salida
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-cardBg rounded border border-gray-800 p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Tipo de Movimiento</label>
+                        <select class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
+                            <option>Todos</option>
+                            <option>Entrada</option>
+                            <option>Salida</option>
+                            <option>Ajuste</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Producto</label>
+                        <input type="text" placeholder="Buscar producto..." class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Fecha Desde</label>
+                        <input type="date" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Fecha Hasta</label>
+                        <input type="date" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
+                    </div>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                        <i class="fa-solid fa-filter mr-2"></i>Filtrar
+                    </button>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-medium mb-4">Movimientos Recientes</h3>
+            <div class="bg-cardBg rounded border border-gray-800 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-sidebarBg border-b border-gray-700">
+                        <tr>
+                            <th class="p-3 font-medium">Fecha</th>
+                            <th class="p-3 font-medium">Tipo</th>
+                            <th class="p-3 font-medium">Producto</th>
+                            <th class="p-3 font-medium">Cantidad</th>
+                            <th class="p-3 font-medium">Proveedor/Cliente</th>
+                            <th class="p-3 font-medium">Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movimiento in movimientos %}
+                        <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
+                            <td class="p-3">{{ movimiento.fecha }}</td>
+                            <td class="p-3">
+                                {% if movimiento.tipo == 'entrada' %}
+                                <span class="bg-green-900/30 text-green-400 px-2 py-1 rounded text-xs">ENTRADA</span>
+                                {% elif movimiento.tipo == 'salida' %}
+                                <span class="bg-red-900/30 text-red-400 px-2 py-1 rounded text-xs">SALIDA</span>
+                                {% else %}
+                                <span class="bg-yellow-900/30 text-yellow-400 px-2 py-1 rounded text-xs">NUEVO</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-3">{{ movimiento.item }}</td>
+                            <td class="p-3">{{ movimiento.cantidad }}</td>
+                            <td class="p-3">{{ movimiento.proveedor_cliente }}</td>
+                            <td class="p-3">Admin</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="registrarProductoModal" class="modal-overlay">
+        <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Registrar Nuevo Producto</h3>
+                <button onclick="closeModal('registrarProductoModal')" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="formRegistrarProducto" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">SKU <span class="text-brandRed">*</span></label>
+                        <input type="text" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Imagen</label>
+                        <input type="file" accept="image/*" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-brandRed file:text-white hover:file:bg-red-700">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Nombre del Producto <span class="text-brandRed">*</span></label>
+                    <input type="text" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Categoría <span class="text-brandRed">*</span></label>
+                        <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <option value="">Seleccionar categoría</option>
+                            <option>Accesorios</option>
+                            <option>Lubricantes</option>
+                            <option>Repuestos</option>
+                            <option>Llantas</option>
+                            <option>Cascos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Marca <span class="text-brandRed">*</span></label>
+                        <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <option value="">Seleccionar marca</option>
+                            <option>Motul</option>
+                            <option>Pirelli</option>
+                            <option>MT Helmets</option>
+                            <option>Brembo</option>
+                            <option>DID</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Stock Inicial <span class="text-brandRed">*</span></label>
+                        <input type="number" min="0" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Precio Compra <span class="text-brandRed">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+                            <input type="number" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Precio Venta <span class="text-brandRed">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+                            <input type="number" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Estado</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="estado_producto" value="activo" checked class="mr-2 text-brandRed focus:ring-brandRed">
+                            <span class="text-sm">Activo</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="estado_producto" value="inactivo" class="mr-2 text-brandRed focus:ring-brandRed">
+                            <span class="text-sm">Inactivo</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                    <button type="button" onclick="closeModal('registrarProductoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                        <i class="fa-solid fa-save mr-2"></i>Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="ingresoModal" class="modal-overlay">
+        <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Registrar Ingreso de Producto</h3>
+                <button onclick="closeModal('ingresoModal')" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="formIngreso" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Buscar Producto <span class="text-brandRed">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-500"></i>
+                        <input type="text" id="busquedaProductoIngreso" placeholder="Escribe para buscar productos..." class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-10 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div id="listaProductosIngreso" class="hidden absolute z-10 mt-1 w-full max-w-md bg-sidebarBg border border-gray-700 rounded shadow-lg">
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoIngreso('Casco MT Helmets', 'CSK-001', 15, '$45.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Casco MT Helmets</p>
+                                <p class="text-xs text-gray-400">SKU: CSK-001 | Stock: 15</p>
+                            </div>
+                        </div>
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoIngreso('Aceite Motul 10W40', 'ACE-002', 45, '$25.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Aceite Motul 10W40</p>
+                                <p class="text-xs text-gray-400">SKU: ACE-002 | Stock: 45</p>
+                            </div>
+                        </div>
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoIngreso('Llantas Pirelli', 'LLA-003', 8, '$120.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Llantas Pirelli</p>
+                                <p class="text-xs text-gray-400">SKU: LLA-003 | Stock: 8</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="infoProductoIngreso" class="bg-darkBg rounded p-3 border border-gray-700 hidden">
+                    <div class="flex items-center">
+                        <img src="https://via.placeholder.com/50" class="w-12 h-12 rounded mr-3">
+                        <div id="detalleProductoIngreso">
+                            <p class="text-white font-medium">Producto seleccionado</p>
+                            <p class="text-xs text-gray-400">SKU: - | Stock actual: -</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Cantidad a Ingresar <span class="text-brandRed">*</span></label>
+                    <input type="number" min="1" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Fecha de Ingreso</label>
+                    <input type="date" value="2026-03-02" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Proveedor <span class="text-brandRed">*</span></label>
+                    <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                        <option value="">Seleccionar proveedor</option>
+                        <option>Distribuidora Motos SAS</option>
+                        <option>Importadora de Llantas</option>
+                        <option>Repuestos Motor Worldwide</option>
+                        <option>Accesorios MT</option>
+                        <option>Lubricantes Premium</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                    <button type="button" onclick="closeModal('ingresoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
+                        <i class="fa-solid fa-save mr-2"></i>Registrar Ingreso
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="salidaModal" class="modal-overlay">
+        <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Registrar Salida de Producto</h3>
+                <button onclick="closeModal('salidaModal')" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="formSalida" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Buscar Producto <span class="text-brandRed">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-500"></i>
+                        <input type="text" id="busquedaProductoSalida" placeholder="Escribe para buscar productos..." class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-10 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div id="listaProductosSalida" class="hidden absolute z-10 mt-1 w-full max-w-md bg-sidebarBg border border-gray-700 rounded shadow-lg">
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoSalida('Casco MT Helmets', 'CSK-001', 15, '$85.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Casco MT Helmets</p>
+                                <p class="text-xs text-gray-400">SKU: CSK-001 | Stock: 15 | $85.000</p>
+                            </div>
+                        </div>
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoSalida('Aceite Motul 10W40', 'ACE-002', 45, '$35.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Aceite Motul 10W40</p>
+                                <p class="text-xs text-gray-400">SKU: ACE-002 | Stock: 45 | $35.000</p>
+                            </div>
+                        </div>
+                        <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoSalida('Llantas Pirelli', 'LLA-003', 8, '$180.000')">
+                            <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
+                            <div>
+                                <p class="text-white text-sm">Llantas Pirelli</p>
+                                <p class="text-xs text-gray-400">SKU: LLA-003 | Stock: 8 | $180.000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="infoProductoSalida" class="bg-darkBg rounded p-3 border border-gray-700 hidden">
+                    <div class="flex items-center">
+                        <img src="https://via.placeholder.com/50" class="w-12 h-12 rounded mr-3">
+                        <div id="detalleProductoSalida">
+                            <p class="text-white font-medium">Producto seleccionado</p>
+                            <p class="text-xs text-gray-400">SKU: - | Stock disponible: -</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Cantidad <span class="text-brandRed">*</span></label>
+                    <input type="number" min="1" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Fecha de Venta</label>
+                    <input type="date" value="2026-03-02" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Cliente</label>
+                    <input type="text" placeholder="Nombre del cliente" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                    <button type="button" onclick="closeModal('salidaModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-brandRed hover:bg-red-700 text-white rounded text-sm transition-colors">
+                        <i class="fa-solid fa-save mr-2"></i>Registrar Venta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

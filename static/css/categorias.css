@@ -1,0 +1,8 @@
+.glow-button {
+    box-shadow: 0 0 10px rgba(217, 27, 27, 0.4);
+    transition: all 0.3s ease;
+}
+
+.glow-button:hover {
+    box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
+}

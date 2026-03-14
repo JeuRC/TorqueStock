@@ -4,32 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categorías - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .glow-button {
-            box-shadow: 0 0 10px rgba(217, 27, 27, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glow-button:hover {
-            box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
-        }
-    </style>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/categorias.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/categorias.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
@@ -67,6 +48,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                        <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos    
+                    </a>
+                </li>
+                <li>
                     <a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
@@ -91,14 +77,16 @@
             </div>
         </header>
 
+    <div class="bg-brandRed text-white px-8 py-3 shadow-md">
+        <h2 class="text-xl font-semibold">Gestión de Categorías</h2>
+    </div>
+
         <main class="flex-1 overflow-y-auto p-8">
-            
-            <h2 class="text-2xl font-semibold text-white tracking-wide mb-6 uppercase">Gestión de Categorías</h2>
             
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex items-center gap-4 w-full md:w-auto">
                     <button class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> AÑADIR NUEVA CATEGORÍA
+                        <i class="fa-solid fa-plus"></i> Añadir Nueva Categoria
                     </button>
                     <div class="relative hidden sm:block">
                         <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
@@ -125,9 +113,9 @@
                     <p class="text-xs text-gray-500 mt-1">{{ resumen.detalle_rentable }}</p>
                 </div>
                 <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-5">
-                    <p class="text-sm text-gray-400 mb-1">Items con Stock Bajo por Categoría</p>
-                    <p class="text-3xl font-bold text-white">{{ resumen.cat_stock_bajo }}</p>
-                    <p class="text-xs text-brandRed mt-1">{{ resumen.items_stock_bajo }}</p>
+                    <p class="text-sm text-gray-400 mb-1">Menor rotacion (30 dias)</p>
+                    <p class="text-3xl font-bold text-white">{{ resumen.menor_rotacion }}</p>
+                    <p class="text-xs text-brandRed mt-1">{{ resumen.detalle_rotacion }}</p>
                 </div>
             </div>
 

@@ -4,24 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/productos.css') }}">
+    
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
+        window.ventasData = {{ ventas | tojson | safe }};
     </script>
+    
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
@@ -42,33 +36,36 @@
                 <li><a href="/categorias" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-tags w-6"></i> Categorías</a></li>
                 <li><a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-users w-6"></i> Proveedores</a></li>
                 <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
+                <li><a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
                 <li><a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-gear w-6"></i> Configuración</a></li>
             </ul>
         </nav>
     </aside>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
-        <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
-            <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+    
+    <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
+        <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
             <div class="flex items-center space-x-6">
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-user text-white"></i>
-                </div>
                 <div class="relative">
                     <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
+                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-64">
+                </div>
+                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-500">
+                    <i class="fa-solid fa-user text-white"></i>
                 </div>
             </div>
-        </header>
+    </header>
 
-        <main class="flex-1 overflow-y-auto p-8">
-            
-            <h2 class="text-2xl font-semibold text-white tracking-wide mb-6">Gestión de Productos</h2>
-            
+    <div class="bg-brandRed text-white px-8 py-3 shadow-md">
+        <h2 class="text-xl font-semibold">Gestión de Productos</h2>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-8">
+
             <div class="flex flex-wrap justify-between items-end mb-6 gap-4">
                 <div class="flex items-center gap-4">
-                    <button class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium shadow-[0_0_10px_rgba(217,27,27,0.4)] flex items-center gap-2">
+                    <button onclick="openModal('registrarProductoModal')" class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Añadir Nuevo Producto
                     </button>
                     <div class="relative">
@@ -151,7 +148,7 @@
                                     <td class="py-3 text-gray-400">{{ item.categoria }}</td>
                                     <td class="py-3 text-gray-400">{{ item.marca }}</td>
                                     <td class="py-3 {{ 'text-brandRed' if item.stock <= 23 else 'text-white' }}">{{ item.stock }}</td>
-                                    <td class="py-3 text-white">{{ item.precio }}</td>
+                                    <td class="py-3 text-white">${{ item.precio }}</td>
                                     <td class="py-3 {{ 'text-gray-300' if item.estado == 'Activo' else 'text-brandRed' }}">{{ item.estado }}</td>
                                     <td class="py-3">
                                         <div class="flex justify-center gap-3 text-brandRed">
@@ -189,49 +186,102 @@
         </main>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('sideSalesChart').getContext('2d');
-            const dataValues = {{ ventas | tojson }};
-            
-            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(217, 27, 27, 0.4)');
-            gradient.addColorStop(1, 'rgba(217, 27, 27, 0.0)');
+    <div id="registrarProductoModal" class="modal-overlay">
+        <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Registrar Nuevo Producto</h3>
+                <button onclick="closeModal('registrarProductoModal')" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form action="/productos" method="POST" id="formularioPrueba" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">SKU <span class="text-brandRed">*</span></label>
+                        <input type="text" name="sku" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Imagen</label>
+                        <input type="file" accept="image/*" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-brandRed file:text-white hover:file:bg-red-700">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Nombre del Producto <span class="text-brandRed">*</span></label>
+                    <input type="text" name="nombre" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Categoría <span class="text-brandRed">*</span></label>
+                        <select name="categoria" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <option value="">Seleccionar categoría</option>
+                            <option value="Accesorios">Accesorios</option>
+                            <option value="Lubricantes">Lubricantes</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Llantas">Llantas</option>
+                            <option value="Cascos">Cascos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Marca <span class="text-brandRed">*</span></label>
+                        <select name="marca" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <option value="">Seleccionar marca</option>
+                            <option value="Motul">Motul</option>
+                            <option value="Pirelli">Pirelli</option>
+                            <option value="MT Helmets">MT Helmets</option>
+                            <option value="Brembo">Brembo</option>
+                            <option value="DID">DID</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Stock Inicial <span class="text-brandRed">*</span></label>
+                        <input type="number" name="stock" min="0" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Precio Compra <span class="text-brandRed">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+                            <input type="number" min="0" step="0.01" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Precio Venta <span class="text-brandRed">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+                            <input type="number" name="precio" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Estado</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="estado" value="Activo" checked class="mr-2 text-brandRed focus:ring-brandRed">
+                            <span class="text-sm">Activo</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="estado" value="Inactivo" class="mr-2 text-brandRed focus:ring-brandRed">
+                            <span class="text-sm">Inactivo</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                    <button type="button" onclick="closeModal('registrarProductoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                        <i class="fa-solid fa-save mr-2"></i>Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['May 23', '', '', '', 'May 23', '', '', '', 'Jul 23', '', ''],
-                    datasets: [{
-                        label: 'Ventas',
-                        data: dataValues,
-                        borderColor: '#d91b1b',
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 600,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { color: '#666', font: {size: 10} }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#666', font: {size: 10} }
-                        }
-                    }
-                }
-            });
-        });
-    </script>
 </body>
 </html>
