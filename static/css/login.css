@@ -1,0 +1,17 @@
+body {
+    background-image: url("../img/fondo_login.png"); /* Ruta relativa ajustada para archivo externo */
+    background-size: cover;        /* Ajusta la imagen a toda la pantalla */
+    background-position: center;   /* Centra la imagen */
+    background-repeat: no-repeat;  /* Evita que se repita */
+    background-attachment: fixed;  /* Efecto moderno tipo fondo fijo */
+}
+
+/* Efecto de luz alrededor del botón */
+.glow-button {
+    box-shadow: 0 0 15px rgba(217, 27, 27, 0.5);
+    transition: all 0.3s ease;
+}
+
+.glow-button:hover {
+    box-shadow: 0 0 25px rgba(217, 27, 27, 0.9);
+}
