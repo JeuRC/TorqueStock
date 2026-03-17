@@ -4,71 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movimientos - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Estilos para los modales */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 50;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #d91b1b;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #b31515;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/movimientos.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/movimientos.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
-    <!-- Sidebar (igual que en dashboard) -->
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
             <h1 class="text-lg font-bold text-white tracking-wide">
@@ -117,7 +62,6 @@
         </nav>
     </aside>
 
-    <!-- Contenido principal -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         
     <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
@@ -139,28 +83,23 @@
 
     <main class="flex-1 overflow-y-auto p-8">
             
-            <!-- Botones de acción principales - AHORA CON 3 BOTONES -->
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium">Registrar Movimiento</h3>
                 <div class="flex space-x-4">
-                    <!-- Botón Registrar Producto (Nuevo producto) -->
                     <button onclick="openModal('registrarProductoModal')" class="font-semibold bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
                         <i class="fa-solid fa-plus-circle mr-2 "></i>Añadir Nuevo Producto
                     </button>
                     
-                    <!-- Botón Ingreso (Compra a proveedor) -->
                     <button onclick="openModal('ingresoModal')" class="font-semibold bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
                         <i class="fa-solid fa-truck mr-2"></i>Ingreso
                     </button>
                     
-                    <!-- Botón Salida/Venta -->
                     <button onclick="openModal('salidaModal')" class="font-semibold bg-brandRed hover:bg-red-700 text-white px-6 py-2 rounded text-sm transition-colors flex items-center">
                         <i class="fa-solid fa-shopping-cart mr-2"></i>Salida
                     </button>
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div class="bg-cardBg rounded border border-gray-800 p-4 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
@@ -192,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Tabla de movimientos recientes -->
             <h3 class="text-lg font-medium mb-4">Movimientos Recientes</h3>
             <div class="bg-cardBg rounded border border-gray-800 overflow-hidden">
                 <table class="w-full text-left text-sm">
@@ -231,7 +169,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE REGISTRAR PRODUCTO (Nuevo producto) -->
     <div id="registrarProductoModal" class="modal-overlay">
         <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
@@ -242,7 +179,6 @@
             </div>
             
             <form id="formRegistrarProducto" class="space-y-4">
-                <!-- SKU e Imagen -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">SKU <span class="text-brandRed">*</span></label>
@@ -254,13 +190,11 @@
                     </div>
                 </div>
                 
-                <!-- Nombre del Producto -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Nombre del Producto <span class="text-brandRed">*</span></label>
                     <input type="text" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Categoría y Marca -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Categoría <span class="text-brandRed">*</span></label>
@@ -286,7 +220,6 @@
                     </div>
                 </div>
                 
-                <!-- Stock y Precios -->
                 <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Stock Inicial <span class="text-brandRed">*</span></label>
@@ -308,7 +241,6 @@
                     </div>
                 </div>
                 
-                <!-- Estado -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Estado</label>
                     <div class="flex space-x-4">
@@ -323,7 +255,6 @@
                     </div>
                 </div>
                 
-                <!-- Botones -->
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
                     <button type="button" onclick="closeModal('registrarProductoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                         Cancelar
@@ -336,7 +267,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE INGRESO (Compra a proveedor) -->
     <div id="ingresoModal" class="modal-overlay">
         <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
@@ -347,14 +277,12 @@
             </div>
             
             <form id="formIngreso" class="space-y-4">
-                <!-- Búsqueda de Producto -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Buscar Producto <span class="text-brandRed">*</span></label>
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3 top-3 text-gray-500"></i>
                         <input type="text" id="busquedaProductoIngreso" placeholder="Escribe para buscar productos..." class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-10 text-sm text-white focus:border-brandRed focus:outline-none">
                     </div>
-                    <!-- Lista de productos sugeridos -->
                     <div id="listaProductosIngreso" class="hidden absolute z-10 mt-1 w-full max-w-md bg-sidebarBg border border-gray-700 rounded shadow-lg">
                         <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoIngreso('Casco MT Helmets', 'CSK-001', 15, '$45.000')">
                             <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
@@ -380,7 +308,6 @@
                     </div>
                 </div>
                 
-                <!-- Información del Producto Seleccionado -->
                 <div id="infoProductoIngreso" class="bg-darkBg rounded p-3 border border-gray-700 hidden">
                     <div class="flex items-center">
                         <img src="https://via.placeholder.com/50" class="w-12 h-12 rounded mr-3">
@@ -391,19 +318,16 @@
                     </div>
                 </div>
                 
-                <!-- Cantidad -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Cantidad a Ingresar <span class="text-brandRed">*</span></label>
                     <input type="number" min="1" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Fecha de Ingreso -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Fecha de Ingreso</label>
                     <input type="date" value="2026-03-02" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Proveedor -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Proveedor <span class="text-brandRed">*</span></label>
                     <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
@@ -416,7 +340,6 @@
                     </select>
                 </div>
                 
-                <!-- Botones -->
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
                     <button type="button" onclick="closeModal('ingresoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                         Cancelar
@@ -429,7 +352,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE SALIDA/VENTA -->
     <div id="salidaModal" class="modal-overlay">
         <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
@@ -440,14 +362,12 @@
             </div>
             
             <form id="formSalida" class="space-y-4">
-                <!-- Búsqueda de Producto -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Buscar Producto <span class="text-brandRed">*</span></label>
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3 top-3 text-gray-500"></i>
                         <input type="text" id="busquedaProductoSalida" placeholder="Escribe para buscar productos..." class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-10 text-sm text-white focus:border-brandRed focus:outline-none">
                     </div>
-                    <!-- Lista de productos sugeridos -->
                     <div id="listaProductosSalida" class="hidden absolute z-10 mt-1 w-full max-w-md bg-sidebarBg border border-gray-700 rounded shadow-lg">
                         <div class="p-2 hover:bg-tableRowHover cursor-pointer flex items-center" onclick="seleccionarProductoSalida('Casco MT Helmets', 'CSK-001', 15, '$85.000')">
                             <img src="https://via.placeholder.com/30" class="w-8 h-8 rounded mr-2">
@@ -473,7 +393,6 @@
                     </div>
                 </div>
                 
-                <!-- Información del Producto Seleccionado -->
                 <div id="infoProductoSalida" class="bg-darkBg rounded p-3 border border-gray-700 hidden">
                     <div class="flex items-center">
                         <img src="https://via.placeholder.com/50" class="w-12 h-12 rounded mr-3">
@@ -484,25 +403,21 @@
                     </div>
                 </div>
                 
-                <!-- Cantidad -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Cantidad <span class="text-brandRed">*</span></label>
                     <input type="number" min="1" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Fecha de Venta -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Fecha de Venta</label>
                     <input type="date" value="2026-03-02" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Cliente -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Cliente</label>
                     <input type="text" placeholder="Nombre del cliente" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Botones -->
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
                     <button type="button" onclick="closeModal('salidaModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                         Cancelar
@@ -515,111 +430,5 @@
         </div>
     </div>
 
-    <script>
-        // Funciones para abrir y cerrar modales
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // Función para seleccionar producto en INGRESO
-        function seleccionarProductoIngreso(nombre, sku, stock, precio) {
-            document.getElementById('busquedaProductoIngreso').value = nombre;
-            
-            const infoDiv = document.getElementById('infoProductoIngreso');
-            const detalleDiv = document.getElementById('detalleProductoIngreso');
-            
-            detalleDiv.innerHTML = `
-                <p class="text-white font-medium">${nombre}</p>
-                <p class="text-xs text-gray-400">SKU: ${sku} | Stock actual: ${stock} | Precio: ${precio}</p>
-            `;
-            
-            infoDiv.classList.remove('hidden');
-            document.getElementById('listaProductosIngreso').classList.add('hidden');
-        }
-        
-        // Función para seleccionar producto en SALIDA
-        function seleccionarProductoSalida(nombre, sku, stock, precio) {
-            document.getElementById('busquedaProductoSalida').value = nombre;
-            
-            const infoDiv = document.getElementById('infoProductoSalida');
-            const detalleDiv = document.getElementById('detalleProductoSalida');
-            
-            detalleDiv.innerHTML = `
-                <p class="text-white font-medium">${nombre}</p>
-                <p class="text-xs text-gray-400">SKU: ${sku} | Stock disponible: ${stock} | Precio: ${precio}</p>
-            `;
-            
-            infoDiv.classList.remove('hidden');
-            document.getElementById('listaProductosSalida').classList.add('hidden');
-        }
-        
-        // Manejo de búsquedas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Búsqueda en ingreso
-            const busquedaIngreso = document.getElementById('busquedaProductoIngreso');
-            const listaIngreso = document.getElementById('listaProductosIngreso');
-            
-            if (busquedaIngreso) {
-                busquedaIngreso.addEventListener('focus', function() {
-                    listaIngreso.classList.remove('hidden');
-                });
-                
-                busquedaIngreso.addEventListener('blur', function() {
-                    setTimeout(() => {
-                        listaIngreso.classList.add('hidden');
-                    }, 200);
-                });
-            }
-            
-            // Búsqueda en salida
-            const busquedaSalida = document.getElementById('busquedaProductoSalida');
-            const listaSalida = document.getElementById('listaProductosSalida');
-            
-            if (busquedaSalida) {
-                busquedaSalida.addEventListener('focus', function() {
-                    listaSalida.classList.remove('hidden');
-                });
-                
-                busquedaSalida.addEventListener('blur', function() {
-                    setTimeout(() => {
-                        listaSalida.classList.add('hidden');
-                    }, 200);
-                });
-            }
-        });
-        
-        // Prevenir envío de formularios (ejemplo)
-        document.getElementById('formRegistrarProducto')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Producto registrado correctamente');
-            closeModal('registrarProductoModal');
-        });
-        
-        document.getElementById('formIngreso')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Ingreso registrado correctamente');
-            closeModal('ingresoModal');
-        });
-        
-        document.getElementById('formSalida')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Venta registrada correctamente');
-            closeModal('salidaModal');
-        });
-    </script>
 </body>
 </html>

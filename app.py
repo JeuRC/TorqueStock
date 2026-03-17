@@ -1,6 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+
+# --- CONFIGURACIÓN DE LA BASE DE DATOS ---
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///torquestock.db' # Crea un archivo torquestock.db
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# --- MODELO DE BASE DE DATOS (Nuestra Tabla de Productos) ---
+class Producto(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sku = db.Column(db.String(20), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)
+    categoria = db.Column(db.String(50))
+    marca = db.Column(db.String(50))
+    stock = db.Column(db.Integer, default=0)
+    precio = db.Column(db.String(20))
+    estado = db.Column(db.String(20), default='Activo')
+
+# Crear la base de datos y las tablas automáticamente si no existen
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def home():
@@ -33,31 +54,39 @@ def dashboard():
     
     return render_template('dashboard.html', resumen=resumen, movimientos=movimientos)
 
-@app.route('/productos')
+@app.route('/productos', methods=['GET', 'POST'])
 def productos():
-    # Datos simulados para las tarjetas de resumen
+    # 1. DE FRONTEND A BASE DE DATOS (Crear un producto)
+    if request.method == 'POST':
+        # Capturamos los datos que envíe tu formulario HTML
+        nuevo_producto = Producto(
+            sku=request.form['sku'],
+            nombre=request.form['nombre'],
+            categoria=request.form['categoria'],
+            marca=request.form['marca'],
+            stock=int(request.form['stock']),
+            precio=request.form['precio'],
+            estado=request.form.get('estado', 'Activo')
+        )
+        db.session.add(nuevo_producto) # Prepara el guardado
+        db.session.commit()            # Guarda en la base de datos
+        return redirect(url_for('productos')) # Recarga la página
+
+    # 2. DE BASE DE DATOS A FRONTEND (Leer productos)
+    productos_db = Producto.query.all() # Trae TODOS los productos de la BD
+
+    # Calculamos datos reales para tus tarjetas basados en la BD!
     resumen_prod = {
-        'total': '5,420',
-        'stock_bajo': '23',
-        'valor_total': '$125,000.00',
-        'nuevas_adiciones': '12' # Número de ejemplo
+        'total': len(productos_db),
+        'stock_bajo': sum(1 for p in productos_db if p.stock < 25),
+        'valor_total': '$---', # Lo dejaremos pendiente para no complicarlo
+        'nuevas_adiciones': '0'
     }
     
-    # Datos simulados para el catálogo (RF-01 y RF-06)
-    lista_productos = [
-        {'sku': '100001', 'nombre': 'Casco MT Helmets Full Face', 'categoria': 'Categoría', 'marca': 'MT Helmets', 'stock': 23, 'precio': '$50.00', 'estado': 'Activo'},
-        {'sku': '710002', 'nombre': 'Aceite Motul 7100 4T', 'categoria': 'Categoría', 'marca': 'Motul', 'stock': 23, 'precio': '$100.00', 'estado': 'Inactivo'},
-        {'sku': '710003', 'nombre': 'Aceite Motul 7100 4T', 'categoria': 'Categoría', 'marca': 'Motul', 'stock': 150, 'precio': '$150.00', 'estado': 'Activo'},
-        {'sku': '100004', 'nombre': 'Llantas Pirelli Angel GT', 'categoria': 'Categoría', 'marca': 'Pirelli', 'stock': 23, 'precio': '$50.00', 'estado': 'Activo'},
-        {'sku': '100005', 'nombre': 'Llantas Pirelli Angel GT', 'categoria': 'Categoría', 'marca': 'Pirelli', 'stock': 150, 'precio': '$130.00', 'estado': 'Activo'},
-        {'sku': '110007', 'nombre': 'Llantas Pirelli Angel GT', 'categoria': 'Categoría', 'marca': 'Pirelli', 'stock': 150, 'precio': '$150.00', 'estado': 'Inactivo'},
-        {'sku': '100008', 'nombre': 'Llantas Pirelli Angel GT', 'categoria': 'Categoría', 'marca': 'Pirelli', 'stock': 23, 'precio': '$720.00', 'estado': 'Activo'},
-    ]
-
-    # Datos para la gráfica lateral
     datos_grafica = [50, 80, 250, 190, 300, 230, 480, 250, 350, 350, 500]
 
-    return render_template('productos.html', resumen=resumen_prod, productos=lista_productos, ventas=datos_grafica)
+    # Pasamos los productos reales en lugar de tu lista simulada
+    return render_template('productos.html', resumen=resumen_prod, productos=productos_db, ventas=datos_grafica)
 
 @app.route('/categorias')
 def categorias():

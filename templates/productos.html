@@ -4,75 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/productos.css') }}">
+    
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
+        window.ventasData = {{ ventas | tojson | safe }};
     </script>
-    <style>
-        /* Estilos para los modales */
-        .glow-button {
-            box-shadow: 0 0 10px rgba(217, 27, 27, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glow-button:hover {
-            box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 50;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #d91b1b;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #b31515;
-        }
-    </style>
+    
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
@@ -122,7 +65,6 @@
 
             <div class="flex flex-wrap justify-between items-end mb-6 gap-4">
                 <div class="flex items-center gap-4">
-                    <!-- MODIFICADO: Agregado onclick para abrir el modal -->
                     <button onclick="openModal('registrarProductoModal')" class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Añadir Nuevo Producto
                     </button>
@@ -206,7 +148,7 @@
                                     <td class="py-3 text-gray-400">{{ item.categoria }}</td>
                                     <td class="py-3 text-gray-400">{{ item.marca }}</td>
                                     <td class="py-3 {{ 'text-brandRed' if item.stock <= 23 else 'text-white' }}">{{ item.stock }}</td>
-                                    <td class="py-3 text-white">{{ item.precio }}</td>
+                                    <td class="py-3 text-white">${{ item.precio }}</td>
                                     <td class="py-3 {{ 'text-gray-300' if item.estado == 'Activo' else 'text-brandRed' }}">{{ item.estado }}</td>
                                     <td class="py-3">
                                         <div class="flex justify-center gap-3 text-brandRed">
@@ -244,7 +186,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE REGISTRAR PRODUCTO (Nuevo producto) - COPIADO DE MOVIMIENTOS -->
     <div id="registrarProductoModal" class="modal-overlay">
         <div class="modal-content bg-cardBg rounded-lg border border-gray-700 w-full max-w-2xl p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
@@ -253,13 +194,11 @@
                     <i class="fa-solid fa-times text-2xl"></i>
                 </button>
             </div>
-            
-            <form id="formRegistrarProducto" class="space-y-4">
-                <!-- SKU e Imagen -->
+            <form action="/productos" method="POST" id="formularioPrueba" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">SKU <span class="text-brandRed">*</span></label>
-                        <input type="text" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                        <input type="text" name="sku" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Imagen</label>
@@ -267,76 +206,71 @@
                     </div>
                 </div>
                 
-                <!-- Nombre del Producto -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Nombre del Producto <span class="text-brandRed">*</span></label>
-                    <input type="text" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                    <input type="text" name="nombre" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                 </div>
                 
-                <!-- Categoría y Marca -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Categoría <span class="text-brandRed">*</span></label>
-                        <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                        <select name="categoria" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                             <option value="">Seleccionar categoría</option>
-                            <option>Accesorios</option>
-                            <option>Lubricantes</option>
-                            <option>Repuestos</option>
-                            <option>Llantas</option>
-                            <option>Cascos</option>
+                            <option value="Accesorios">Accesorios</option>
+                            <option value="Lubricantes">Lubricantes</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Llantas">Llantas</option>
+                            <option value="Cascos">Cascos</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Marca <span class="text-brandRed">*</span></label>
-                        <select required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                        <select name="marca" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                             <option value="">Seleccionar marca</option>
-                            <option>Motul</option>
-                            <option>Pirelli</option>
-                            <option>MT Helmets</option>
-                            <option>Brembo</option>
-                            <option>DID</option>
+                            <option value="Motul">Motul</option>
+                            <option value="Pirelli">Pirelli</option>
+                            <option value="MT Helmets">MT Helmets</option>
+                            <option value="Brembo">Brembo</option>
+                            <option value="DID">DID</option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Stock y Precios -->
                 <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Stock Inicial <span class="text-brandRed">*</span></label>
-                        <input type="number" min="0" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
+                        <input type="number" name="stock" min="0" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Precio Compra <span class="text-brandRed">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">$</span>
-                            <input type="number" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <input type="number" min="0" step="0.01" class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Precio Venta <span class="text-brandRed">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">$</span>
-                            <input type="number" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
+                            <input type="number" name="precio" min="0" step="0.01" required class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
                         </div>
                     </div>
                 </div>
                 
-                <!-- Estado -->
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Estado</label>
                     <div class="flex space-x-4">
                         <label class="flex items-center">
-                            <input type="radio" name="estado_producto" value="activo" checked class="mr-2 text-brandRed focus:ring-brandRed">
+                            <input type="radio" name="estado" value="Activo" checked class="mr-2 text-brandRed focus:ring-brandRed">
                             <span class="text-sm">Activo</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="radio" name="estado_producto" value="inactivo" class="mr-2 text-brandRed focus:ring-brandRed">
+                            <input type="radio" name="estado" value="Inactivo" class="mr-2 text-brandRed focus:ring-brandRed">
                             <span class="text-sm">Inactivo</span>
                         </label>
                     </div>
                 </div>
                 
-                <!-- Botones -->
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
                     <button type="button" onclick="closeModal('registrarProductoModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                         Cancelar
@@ -349,76 +283,5 @@
         </div>
     </div>
 
-    <script>
-        // Funciones para abrir y cerrar modales
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // Prevenir envío del formulario (ejemplo)
-        document.getElementById('formRegistrarProducto')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Producto registrado correctamente');
-            closeModal('registrarProductoModal');
-        });
-
-        // Gráfico de ventas (ya existente)
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('sideSalesChart').getContext('2d');
-            const dataValues = {{ ventas | tojson }};
-            
-            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(217, 27, 27, 0.4)');
-            gradient.addColorStop(1, 'rgba(217, 27, 27, 0.0)');
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['May 23', '', '', '', 'May 23', '', '', '', 'Jul 23', '', ''],
-                    datasets: [{
-                        label: 'Ventas',
-                        data: dataValues,
-                        borderColor: '#d91b1b',
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 600,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { color: '#666', font: {size: 10} }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#666', font: {size: 10} }
-                        }
-                    }
-                }
-            });
-        });
-    </script>
 </body>
 </html>

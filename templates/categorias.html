@@ -4,32 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categorías - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .glow-button {
-            box-shadow: 0 0 10px rgba(217, 27, 27, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glow-button:hover {
-            box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
-        }
-    </style>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/categorias.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/categorias.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 

@@ -4,23 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proveedores - TorqueStock</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
-                        sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
-                        tableRowHover: '#2a2a2a'
-                    }
-                }
-            }
-        }
-    </script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proveedores.css') }}">
+    
+    <script src="{{ url_for('static', filename='js/proveedores.js') }}"></script>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
@@ -86,21 +76,18 @@
             </div>
         </header>
 
-        <!-- Header rojo SOLO con el título (SIN EL BOTÓN) -->
         <div class="bg-brandRed text-white px-8 py-3 shadow-md">
             <h2 class="text-xl font-semibold">Gestión de Proveedores</h2>
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
             
-            <!-- BOTÓN AÑADIR NUEVO PROVEEDOR ) -->
             <div class="flex justify-start mb-6">
                 <button class="font-semibold bg-brandRed hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(217,27,27,0.4)] hover:shadow-[0_0_20px_rgba(217,27,27,0.8)]">
                     <i class="fa-solid fa-plus"></i> Añadir Nuevo Proveedor
                 </button>
             </div>
 
-            <!-- Filtros -->
             <div class="flex flex-col lg:flex-row gap-4 mb-6">
                 <div class="flex flex-1">
                     <input type="text" placeholder="Buscar proveedores" class="w-full bg-cardBg border border-gray-700 rounded-l py-2 px-4 text-sm focus:outline-none text-white">
@@ -123,7 +110,6 @@
                 </div>
             </div>
 
-            <!-- Tarjetas de resumen -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
                     <div>
@@ -145,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Tabla de proveedores -->
             <div class="bg-cardBg rounded border border-gray-800 p-5">
                 <h3 class="text-md font-medium mb-4 text-white">Lista de Proveedores ({{ resumen.total }} proveedores)</h3>
                 <div class="overflow-x-auto">
@@ -190,7 +175,6 @@
                 </div>
             </div>
 
-            <!-- Paginación -->
             <div class="flex justify-center mt-6 text-sm text-gray-500">
                 <button class="hover:text-white px-2"><i class="fa-solid fa-angle-left"></i></button>
                 <span class="px-2 text-white">1</span>
