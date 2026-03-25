@@ -6,3 +6,106 @@
 .glow-button:hover {
     box-shadow: 0 0 20px rgba(217, 27, 27, 0.8);
 }
+
+/* Estilos para el modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar personalizado para el modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #1f2937;
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #dc2626;
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #b91c1c;
+}
+
+/* Estilo para el botón de guardar */
+button[type="submit"] {
+    background-color: #dc2626;
+}
+
+button[type="submit"]:hover {
+    background-color: #b91c1c;
+}
+
+/* Efecto glow para botones */
+.glow-button:hover {
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Clases de colores personalizadas */
+.bg-darkBg {
+    background-color: #0f0f12;
+}
+
+.bg-sidebarBg {
+    background-color: #1a1a1f;
+}
+
+.bg-cardBg {
+    background-color: #1e1e24;
+}
+
+.bg-tableRowHover:hover {
+    background-color: #2a2a32;
+}
+
+.text-brandRed {
+    color: #dc2626;
+}
+
+.bg-brandRed {
+    background-color: #dc2626;
+}
+
+.border-brandRed {
+    border-color: #dc2626;
+}
+
+.focus\:border-brandRed:focus {
+    border-color: #dc2626;
+}

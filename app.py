@@ -90,6 +90,7 @@ def productos():
 
 @app.route('/categorias')
 def categorias():
+    
     # Datos simulados para las tarjetas de resumen de categorías
     resumen_cat = {
         'total_categorias': 12,
@@ -127,7 +128,7 @@ def proveedores():
     ]
     
     return render_template('proveedores.html', resumen=resumen_prov, proveedores=lista_proveedores)
-
+    
 @app.route('/reportes')
 def reportes():
     # Simulamos los días del mes (Nov 01 a Nov 30)
