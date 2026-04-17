@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,10 +12,10 @@
             theme: {
                 extend: {
                     colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
+                        brandRed: '#d91b1b',
+                        darkBg: '#0f0f0f',
                         sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
+                        cardBg: '#222222',
                         tableRowHover: '#2a2a2a'
                     }
                 }
@@ -22,6 +23,7 @@
         }
     </script>
 </head>
+
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
@@ -32,14 +34,24 @@
         </div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-1">
-                <li><a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-house w-6"></i> Inicio</a></li>
-                <li><a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-box w-6"></i> Productos</a></li>
-                <li><a href="/categorias" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-tags w-6"></i> Categorías</a></li>
-                <li><a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-users w-6"></i> Proveedores</a></li>
-                <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
-                <li><a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
+                <li><a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-house w-6"></i> Inicio</a></li>
+                <li><a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-box w-6"></i> Productos</a></li>
+                <li><a href="/categorias"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-tags w-6"></i> Categorías</a></li>
+                <li><a href="/proveedores"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-users w-6"></i> Proveedores</a></li>
+                <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
+                <li><a href="/movimientos"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
                 <li>
-                    <a href="/configuracion" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                    <a href="/configuracion"
+                        class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
                 </li>
@@ -48,7 +60,7 @@
     </aside>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
+
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
             <div class="flex items-center space-x-6">
@@ -57,7 +69,8 @@
                 </div>
                 <div class="relative">
                     <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
+                    <input type="text" placeholder="Buscar"
+                        class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
                 </div>
             </div>
         </header>
@@ -67,12 +80,13 @@
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
-            
+
             <div class="flex border-b border-gray-800 mb-8 text-sm text-gray-400">
                 <a href="#" class="px-4 py-2 hover:text-white transition-colors">[UserProfile]</a>
                 <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Preferences]</a>
                 <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Security]</a>
-                <a href="#" class="px-4 py-2 text-white border-b-2 border-brandRed font-medium">[Roles & Permissions]</a>
+                <a href="#" class="px-4 py-2 text-white border-b-2 border-brandRed font-medium">[Roles &
+                    Permissions]</a>
                 <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Notifications]</a>
             </div>
 
@@ -82,7 +96,8 @@
                         <p class="text-sm text-gray-400 mb-1">Total Roles</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.total }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                 </div>
@@ -91,7 +106,8 @@
                         <p class="text-sm text-gray-400 mb-1">Administradores</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.administradores }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-regular fa-user"></i>
                     </div>
                 </div>
@@ -100,14 +116,16 @@
                         <p class="text-sm text-gray-400 mb-1">Operadores</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.operadores }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-solid fa-user-group text-sm"></i>
                     </div>
                 </div>
             </div>
 
             <div class="bg-cardBg rounded border border-gray-800 p-5">
-                <h3 class="text-md font-medium mb-4 text-white">Gestión de Roles y Permisos ({{ resumen.total }} roles)</h3>
+                <h3 class="text-md font-medium mb-4 text-white">Gestión de Roles y Permisos ({{ resumen.total }} roles)
+                </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
@@ -136,13 +154,18 @@
                                     </div>
                                 </td>
                                 <td class="py-4">
-                                    <span class="bg-gray-800 text-gray-300 px-3 py-1 rounded text-xs border border-gray-600">{{ rol.estado }}</span>
+                                    <span
+                                        class="bg-gray-800 text-gray-300 px-3 py-1 rounded text-xs border border-gray-600">{{
+                                        rol.estado }}</span>
                                 </td>
                                 <td class="py-4 text-center">
                                     <div class="flex justify-center gap-3 text-brandRed">
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-pen-to-square"></i></button>
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-trash-can"></i></button>
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="hover:text-red-400 transition-colors"><i
+                                                class="fa-regular fa-pen-to-square"></i></button>
+                                        <button class="hover:text-red-400 transition-colors"><i
+                                                class="fa-regular fa-trash-can"></i></button>
+                                        <button class="hover:text-red-400 transition-colors"><i
+                                                class="fa-regular fa-eye"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -161,4 +184,5 @@
         </main>
     </div>
 </body>
+
 </html>

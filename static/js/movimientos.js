@@ -32,32 +32,36 @@ window.onclick = function(event) {
     }
 }
 
-// Función para seleccionar producto en INGRESO
 window.seleccionarProductoIngreso = function(nombre, sku, stock, precio) {
-    document.getElementById('busquedaProductoIngreso').value = nombre;
+    // 1. Asignar el valor al input
+    const inputBusqueda = document.getElementById('busquedaProductoIngreso');
+    inputBusqueda.value = nombre;
     
+    // 2. Mostrar la tarjeta de información
     const infoDiv = document.getElementById('infoProductoIngreso');
     const detalleDiv = document.getElementById('detalleProductoIngreso');
     
     detalleDiv.innerHTML = `
         <p class="text-white font-medium">${nombre}</p>
-        <p class="text-xs text-gray-400">SKU: ${sku} | Stock actual: ${stock} | Precio: ${precio}</p>
+        <p class="text-xs text-gray-400 mt-1">SKU: <span class="text-white">${sku}</span> | Stock: <span class="text-white">${stock}</span> | Precio: <span class="text-white">${precio}</span></p>
     `;
     
     infoDiv.classList.remove('hidden');
+    
+    // 3. Ocultar la lista INMEDIATAMENTE
     document.getElementById('listaProductosIngreso').classList.add('hidden');
 }
 
-// Función para seleccionar producto en SALIDA
 window.seleccionarProductoSalida = function(nombre, sku, stock, precio) {
-    document.getElementById('busquedaProductoSalida').value = nombre;
+    const inputBusqueda = document.getElementById('busquedaProductoSalida');
+    inputBusqueda.value = nombre;
     
     const infoDiv = document.getElementById('infoProductoSalida');
     const detalleDiv = document.getElementById('detalleProductoSalida');
     
     detalleDiv.innerHTML = `
         <p class="text-white font-medium">${nombre}</p>
-        <p class="text-xs text-gray-400">SKU: ${sku} | Stock disponible: ${stock} | Precio: ${precio}</p>
+        <p class="text-xs text-gray-400 mt-1">SKU: <span class="text-white">${sku}</span> | Disponible: <span class="text-white">${stock}</span> | Precio: <span class="text-white">${precio}</span></p>
     `;
     
     infoDiv.classList.remove('hidden');
@@ -97,32 +101,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200);
         });
     }
-
-    // Prevenir envío de formularios (ejemplo)
+    
     const formRegistrar = document.getElementById('formRegistrarProducto');
     if (formRegistrar) {
         formRegistrar.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Producto registrado correctamente');
-            window.closeModal('registrarProductoModal');
+            const btn = this.querySelector('button[type="submit"]');
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Guardando...';
         });
     }
     
     const formIngreso = document.getElementById('formIngreso');
     if (formIngreso) {
         formIngreso.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Ingreso registrado correctamente');
-            window.closeModal('ingresoModal');
+            const btn = this.querySelector('button[type="submit"]');
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Registrando Ingreso...';
         });
     }
     
     const formSalida = document.getElementById('formSalida');
     if (formSalida) {
         formSalida.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Venta registrada correctamente');
-            window.closeModal('salidaModal');
+            const btn = this.querySelector('button[type="submit"]');
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Registrando Venta...';
         });
     }
 });
