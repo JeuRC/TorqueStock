@@ -18,6 +18,7 @@
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque" class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -55,12 +56,14 @@
                         <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos
                     </a>
                 </li>
+                {% if session.get('user_rol') == 'Administrador' %}
                 <li>
                     <a href="/configuracion"
                         class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </nav>
     </aside>
@@ -69,15 +72,21 @@
 
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+            
             <div class="flex items-center space-x-6">
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-user text-white"></i>
+                <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
+                        <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                        <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
+                    </div>
                 </div>
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar"
-                        class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
-                </div>
+                
+                <a href="/logout" class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
+                </a>
             </div>
         </header>
 
@@ -88,10 +97,12 @@
         <main class="flex-1 overflow-y-auto p-8">
 
             <div class="flex justify-start mb-6">
+                {% if session.get('user_rol') == 'Administrador' %}
                 <button onclick="openModal('registrarProveedorModal')"
                     class="font-semibold bg-brandRed hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors flex items-center gap-2 glow-button">
                     <i class="fa-solid fa-plus"></i> Añadir Nuevo Proveedor
                 </button>
+                {% endif %}
             </div>
 
             <form id="filtrosForm" method="GET" action="{{ url_for('proveedores') }}" class="mb-6">
@@ -168,7 +179,9 @@
                                 <th class="pb-3 font-medium">Teléfono</th>
                                 <th class="pb-3 font-medium">Suministro Principal</th>
                                 <th class="pb-3 font-medium">Estado</th>
+                                {% if session.get('user_rol') == 'Administrador' %}
                                 <th class="pb-3 font-medium text-center">Acciones</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -196,10 +209,13 @@
                                             class="fa-solid fa-circle text-[10px] mr-1"></i>Inactivo</span>
                                     {% endif %}
                                 </td>
-
+                                {% if session.get('user_rol') == 'Administrador' %}
                                 <td class="py-4 text-center">
                                     <div class="flex justify-center gap-3 text-brandRed">
-                                        <button class="hover:text-red-400 transition-colors" title="Editar">
+                                        <button type="button"
+                                            onclick='abrirModalEditarProv({{ prov.id }}, {{ prov.nombre | tojson }}, {{ prov.contacto | tojson }}, {{ prov.correo | tojson }}, {{ prov.telefono | tojson }}, {{ prov.suministro | tojson }}, {{ prov.estado | tojson }})'
+                                            class="text-blue-500 hover:text-blue-400 transition-colors mr-3"
+                                            title="Editar">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
                                         <form action="{{ url_for('eliminar_proveedor', id=prov.id) }}" method="POST"
@@ -212,6 +228,7 @@
                                         </form>
                                     </div>
                                 </td>
+                                {% endif %}
                             </tr>
                             {% else %}
                             <tr>
@@ -320,7 +337,122 @@
             </form>
         </div>
     </div>
+    <script>
+        function abrirModalEditarProv(id, nombre, contacto, correo, telefono, suministro, estado) {
+            // Actualizar la ruta del formulario con el ID
+            document.getElementById('formEditarProveedor').action = `/editar_proveedor/${id}`;
 
+            // Llenar los campos de texto
+            document.getElementById('edit_nombreProv').value = nombre || '';
+            document.getElementById('edit_contactoProv').value = contacto || '';
+            document.getElementById('edit_correoProv').value = correo || '';
+            document.getElementById('edit_telefonoProv').value = telefono || '';
+            document.getElementById('edit_suministroProv').value = suministro || '';
+
+            // Marcar el botón de radio correcto para el estado
+            if (estado === 'Inactivo') {
+                document.getElementById('edit_estadoInactivoProv').checked = true;
+            } else {
+                document.getElementById('edit_estadoActivoProv').checked = true;
+            }
+
+            // Mostrar el modal
+            const modal = document.getElementById('editarProveedorModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModalEditarProv() {
+            const modal = document.getElementById('editarProveedorModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+    <div id="editarProveedorModal"
+        class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center backdrop-blur-sm transition-opacity">
+        <div
+            class="modal-content bg-cardBg w-full max-w-md mx-4 rounded-xl border border-gray-700 shadow-2xl p-6 relative">
+
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-800">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <i class="fa-regular fa-pen-to-square text-brandRed mr-2"></i> Editar Proveedor
+                </h3>
+                <button type="button" onclick="cerrarModalEditarProv()"
+                    class="text-gray-500 hover:text-brandRed transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="formEditarProveedor" method="POST" class="space-y-4">
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Nombre de la Empresa</label>
+                    <input type="text" name="nombre" id="edit_nombreProv" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Persona de Contacto</label>
+                    <input type="text" name="contacto" id="edit_contactoProv"
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:outline-none transition-all">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Correo Electrónico <span
+                                class="text-brandRed">*</span></label>
+                        <input type="email" name="correo" id="edit_correoProv" required
+                            class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Teléfono <span
+                                class="text-brandRed">*</span></label>
+                        <input type="tel" name="telefono" id="edit_telefonoProv" required pattern="[0-9]+"
+                            class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:outline-none transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Tipo de Suministro <span
+                            class="text-brandRed">*</span></label>
+                    <select name="suministro" id="edit_suministroProv" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:outline-none transition-all">
+                        <option value="">Seleccione una categoría</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Estado</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="estado" value="Activo" id="edit_estadoActivoProv"
+                                class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
+                            <span class="text-sm text-gray-300">Activo</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="estado" value="Inactivo" id="edit_estadoInactivoProv"
+                                class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
+                            <span class="text-sm text-gray-300">Inactivo</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 mt-2 border-t border-gray-800">
+                    <button type="button" onclick="cerrarModalEditarProv()"
+                        class="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white rounded-lg text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="glow-button px-4 py-2 bg-brandRed hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i class="fa-solid fa-save mr-2"></i> Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

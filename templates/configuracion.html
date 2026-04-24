@@ -28,6 +28,8 @@
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -63,15 +65,23 @@
 
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+
             <div class="flex items-center space-x-6">
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-user text-white"></i>
+                <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
+                        <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
+                    </div>
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                        <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
+                    </div>
                 </div>
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar"
-                        class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
-                </div>
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
+                </a>
             </div>
         </header>
 
@@ -80,15 +90,6 @@
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
-
-            <div class="flex border-b border-gray-800 mb-8 text-sm text-gray-400">
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[UserProfile]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Preferences]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Security]</a>
-                <a href="#" class="px-4 py-2 text-white border-b-2 border-brandRed font-medium">[Roles &
-                    Permissions]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Notifications]</a>
-            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
@@ -137,11 +138,10 @@
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="text-gray-400 border-b border-gray-700">
-                                <th class="pb-3 font-medium">Rol</th>
-                                <th class="pb-3 font-medium">Descripción</th>
-                                <th class="pb-3 font-medium">Permisos Clave</th>
-                                <th class="pb-3 font-medium">Miembros Asignados</th>
-                                <th class="pb-3 font-medium">Estado</th>
+                                <th class="pb-3 font-medium">Usuario / Correo</th>
+                                <th class="pb-3 font-medium">Nivel de Acceso</th>
+                                <th class="pb-3 font-medium text-center">Rol Asignado</th>
+                                <th class="pb-3 font-medium text-center">Estado</th>
                                 <th class="pb-3 font-medium text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -149,22 +149,38 @@
                             {% for user in roles %}
                             <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
                                 <td class="py-4 text-white font-medium">{{ user.username }}</td>
-                                <td class="py-4 text-gray-400">Acceso al sistema TorqueStock</td>
                                 <td class="py-4">
                                     {% if user.rol == 'Administrador' %}
-                                    <span class="text-blue-400"><i class="fa-solid fa-shield-halved mr-1"></i> Full
-                                        Access</span>
+                                    <span class="text-blue-400 text-sm"><i class="fa-solid fa-shield-halved mr-1"></i>
+                                        Control Total</span>
                                     {% else %}
-                                    <span class="text-gray-400"><i class="fa-solid fa-box mr-1"></i> Inventario</span>
+                                    <span class="text-gray-400 text-sm"><i class="fa-solid fa-box mr-1"></i>
+                                        Operativa</span>
                                     {% endif %}
                                 </td>
-                                <td class="py-4 text-white text-center">
-                                    <span class="bg-gray-800 px-3 py-1 rounded-full text-xs">{{ user.rol }}</span>
+                                <td class="py-4 text-center">
+                                    <span
+                                        class="bg-gray-800 px-3 py-1 rounded-full text-xs text-white border border-gray-600">{{
+                                        user.rol }}</span>
+                                </td>
+                                <td class="py-4 text-center">
+                                    <span class="text-green-500 text-sm"><i
+                                            class="fa-solid fa-circle text-[10px] mr-1"></i>Activo</span>
                                 </td>
                                 <td class="py-4 text-center">
                                     <div class="flex justify-center gap-3 text-brandRed">
-                                        <button class="hover:text-red-400"><i
-                                                class="fa-regular fa-trash-can"></i></button>
+                                        {% if session.get('user_id') != user.id %}
+                                        <form action="{{ url_for('eliminar_usuario', id=user.id) }}" method="POST"
+                                            onsubmit="return confirm('¿Estás seguro de eliminar este usuario del sistema?');">
+                                            <button type="submit" class="hover:text-red-400 transition-colors"
+                                                title="Eliminar Usuario">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-gray-600 text-xs italic"
+                                            title="No puedes eliminarte a ti mismo">Tú</span>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>

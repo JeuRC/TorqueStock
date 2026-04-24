@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash # Para cifrar contraseñas
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import extract
+from functools import wraps
 import calendar
 import base64
 import os
@@ -22,7 +23,7 @@ class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), nullable=False, unique=True)
     descripcion = db.Column(db.String(200))
-    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class Producto(db.Model):
     __tablename__ = 'producto' # Opcional, pero buena práctica
@@ -52,7 +53,7 @@ class Movimiento(db.Model):
     item = db.Column(db.String(100), nullable=False)
     tipo = db.Column(db.String(20)) # entrada / salida / nuevo
     cantidad = db.Column(db.String(20))
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     proveedor_cliente = db.Column(db.String(100))
 
 class Usuario(db.Model):
@@ -70,6 +71,31 @@ with app.app_context():
         nuevo_admin = Usuario(username='admin@torquebikers.com', password=admin_pass, rol='Administrador')
         db.session.add(nuevo_admin)
         db.session.commit()
+
+# --- BARRERAS DE SEGURIDAD (DECORADORES) ---
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Si no hay un ID de usuario en la sesión, lo mandamos al login
+        if 'user_id' not in session:
+            flash('Por favor, inicia sesión para acceder al sistema.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Primero validamos que esté logueado
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+            
+        if session.get('user_rol') != 'Administrador':
+            flash('Acceso denegado: Se requieren permisos de Administrador.', 'error')
+            return redirect(request.referrer or url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # --- RUTAS ---
 
@@ -89,13 +115,20 @@ def login():
         if user and check_password_hash(user.password, user_pass):
             session['user_id'] = user.id
             session['user_rol'] = user.rol
+            session['username'] = user.username  # <-- AÑADE ESTA LÍNEA
             return redirect(url_for('dashboard'))
         else:
             flash('Correo o contraseña incorrectos.', 'error')
             
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    session.clear() # Borra todos los datos de la sesión actual
+    return redirect(url_for('login'))
+
 @app.route('/dashboard')
+@login_required
 def dashboard():
     # 1. Cálculos para las Tarjetas de Resumen
     total_prod = Producto.query.count()
@@ -163,8 +196,14 @@ def dashboard():
                            grafica=grafica_dashboard)
 
 @app.route('/productos', methods=['GET', 'POST'])
+@login_required
 def productos():
     if request.method == 'POST':
+        # --- VALIDACIÓN DE SEGURIDAD ---
+        if session.get('user_rol') != 'Administrador':
+            flash('No tienes permiso para crear productos.', 'error')
+            return redirect(url_for('productos'))
+        # -------------------------------
         stock_inicial = int(request.form.get('stock', 0))
         
         nuevo_p = Producto(
@@ -221,7 +260,7 @@ def productos():
         except:
             pass
             
-    hoy = datetime.utcnow()
+    hoy = datetime.now(timezone.utc)
     # Buscamos en Movimientos los "nuevos" registrados este mes y año
     movimientos_nuevos = Movimiento.query.filter_by(tipo='nuevo').all()
     adiciones_mes = sum(1 for m in movimientos_nuevos if m.fecha.month == hoy.month and m.fecha.year == hoy.year)
@@ -281,6 +320,7 @@ def productos():
                            busqueda=busqueda)
 
 @app.route('/eliminar_producto/<int:id>', methods=['POST'])
+@admin_required
 def eliminar_producto(id):
     # Buscamos el producto
     producto = Producto.query.get_or_404(id)
@@ -300,9 +340,37 @@ def eliminar_producto(id):
     
     return redirect(url_for('productos'))
 
+@app.route('/editar_producto/<int:id>', methods=['POST'])
+@admin_required
+def editar_producto(id):
+    # Validamos que el usuario esté logueado (si aplicaste el paso anterior)
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Buscamos el producto en la base de datos
+    producto = Producto.query.get_or_404(id)
+    
+    # Actualizamos únicamente los campos permitidos
+    producto.sku = request.form.get('sku')
+    producto.nombre = request.form.get('nombre')
+    producto.precio_compra = request.form.get('precio_compra')
+    producto.precio = request.form.get('precio')
+    
+    # Guardamos los cambios
+    db.session.commit()
+    flash('Producto actualizado correctamente.', 'success')
+    
+    return redirect(url_for('productos'))
+
 @app.route('/categorias', methods=['GET', 'POST'])
+@login_required
 def categorias():
     if request.method == 'POST':
+        # --- VALIDACIÓN DE SEGURIDAD ---
+        if session.get('user_rol') != 'Administrador':
+            flash('No tienes permiso para crear categorías.', 'error')
+            return redirect(url_for('categorias'))
+        # -------------------------------
         nueva_c = Categoria(
             nombre=request.form['nombre'],
             descripcion=request.form.get('descripcion', '')
@@ -399,6 +467,7 @@ def categorias():
     return render_template('categorias.html', resumen=resumen_cat, lista_categorias=categorias_db)
 
 @app.route('/eliminar_categoria/<int:id>', methods=['POST'])
+@admin_required
 def eliminar_categoria(id):
     # Buscamos la categoría en la base de datos por su ID
     categoria_a_eliminar = Categoria.query.get_or_404(id)
@@ -410,9 +479,32 @@ def eliminar_categoria(id):
     # Redirigimos de vuelta a la vista principal de categorías
     return redirect(url_for('categorias'))
 
+@app.route('/editar_categoria/<int:id>', methods=['POST'])
+@admin_required
+def editar_categoria(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    categoria = Categoria.query.get_or_404(id)
+    
+    # Actualizar valores
+    categoria.nombre = request.form.get('nombre')
+    categoria.descripcion = request.form.get('descripcion')
+    
+    db.session.commit()
+    flash('Categoría actualizada correctamente.', 'success')
+    
+    return redirect(url_for('categorias'))
+
 @app.route('/proveedores', methods=['GET', 'POST'])
+@login_required
 def proveedores():
     if request.method == 'POST':
+        # --- VALIDACIÓN DE SEGURIDAD ---
+        if session.get('user_rol') != 'Administrador':
+            flash('No tienes permiso para crear proveedores.', 'error')
+            return redirect(url_for('proveedores'))
+        # -------------------------------
         nuevo_prov = Proveedor(
             nombre=request.form['nombre'],
             contacto=request.form['contacto'],
@@ -458,6 +550,7 @@ def proveedores():
                            busqueda=busqueda)
 
 @app.route('/eliminar_proveedor/<int:id>', methods=['POST'])
+@admin_required
 def eliminar_proveedor(id):
     # Buscamos el proveedor en la base de datos por su ID
     proveedor_a_eliminar = Proveedor.query.get_or_404(id)
@@ -469,7 +562,29 @@ def eliminar_proveedor(id):
     # Redirigimos de vuelta a la vista de proveedores
     return redirect(url_for('proveedores'))
 
+@app.route('/editar_proveedor/<int:id>', methods=['POST'])
+@admin_required
+def editar_proveedor(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    proveedor = Proveedor.query.get_or_404(id)
+    
+    # Actualizar valores
+    proveedor.nombre = request.form.get('nombre')
+    proveedor.contacto = request.form.get('contacto')
+    proveedor.correo = request.form.get('correo')
+    proveedor.telefono = request.form.get('telefono')
+    proveedor.suministro = request.form.get('suministro')
+    proveedor.estado = request.form.get('estado')
+    
+    db.session.commit()
+    flash('Proveedor actualizado correctamente.', 'success')
+    
+    return redirect(url_for('proveedores'))
+
 @app.route('/movimientos', methods=['GET', 'POST'])
+@login_required
 def movimientos():
     if request.method == 'POST':
         tipo_mov = request.form.get('tipo')
@@ -609,6 +724,7 @@ def movimientos():
                            fecha_hasta=fecha_hasta)
 
 @app.route('/reportes')
+@login_required
 def reportes():
     # 1. Opciones de Meses (Mantenemos tu lógica)
     meses_db = db.session.query(
@@ -677,6 +793,7 @@ def reportes():
                            graficas=graficas)
 
 @app.route('/generar_reporte', methods=['POST'])
+@login_required
 def generar_reporte():
     tipo_reporte = request.form.get('tipo_reporte')
     periodo = request.form.get('periodo')
@@ -747,6 +864,7 @@ def generar_reporte():
                            tipo_img=tipo_img)
 
 @app.route('/configuracion', methods=['GET', 'POST'])
+@admin_required
 def configuracion():
     if request.method == 'POST':
         # Lógica para añadir nuevo usuario desde el panel
@@ -770,6 +888,20 @@ def configuracion():
     }
     return render_template('configuracion.html', resumen=resumen_roles, roles=usuarios_db)
 
+@app.route('/eliminar_usuario/<int:id>', methods=['POST'])
+@admin_required
+def eliminar_usuario(id):
+    # Prevenir que el usuario actual se elimine a sí mismo
+    if session.get('user_id') == id:
+        flash('No puedes eliminar tu propio usuario activo.', 'error')
+        return redirect(url_for('configuracion'))
+
+    user = Usuario.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('Usuario eliminado exitosamente.', 'success')
+    
+    return redirect(url_for('configuracion'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
