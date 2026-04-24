@@ -169,24 +169,38 @@
                                     {{ cat.descripcion if cat.descripcion else 'Sin descripción' }}
                                 </td>
 
-                                <td class="py-4 text-gray-500 text-sm">
-                                    {{ cat.fecha_creacion.strftime('%Y-%m-%d') if cat.fecha_creacion else '-' }}
+                                <td class="py-4 text-white text-sm">
+                                    {{ cat.cantidad_productos }} productos
+                                </td>
+
+                                <td class="py-4 text-green-400 font-mono text-sm">
+                                    ${{ "{:,.2f}".format(cat.valor_total) }}
                                 </td>
 
                                 <td class="py-4 text-center">
-                                    <div class="flex justify-center gap-3 text-brandRed">
-                                        <button class="hover:text-red-400 transition-colors" title="Editar">
+                                    <div class="flex justify-center items-center gap-3 text-brandRed">
+
+                                        <button class="hover:text-red-400 transition-colors flex items-center h-full"
+                                            title="Editar">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
-                                        <button class="hover:text-red-400 transition-colors" title="Eliminar">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
+
+                                        <form action="{{ url_for('eliminar_categoria', id=cat.id) }}" method="POST"
+                                            class="m-0 p-0 flex items-center h-full"
+                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.');">
+                                            <button type="submit"
+                                                class="hover:text-red-400 transition-colors flex items-center"
+                                                title="Eliminar">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+
                                     </div>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-gray-500">
+                                <td colspan="6" class="py-8 text-center text-gray-500">
                                     <i class="fa-solid fa-folder-open text-3xl mb-2 opacity-50 block"></i>
                                     No hay categorías registradas aún.
                                 </td>

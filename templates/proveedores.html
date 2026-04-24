@@ -94,37 +94,43 @@
                 </button>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-4 mb-6">
-                <div class="flex flex-1">
-                    <input type="text" id="buscarProveedor" placeholder="Buscar proveedores"
-                        class="w-full bg-cardBg border border-gray-700 rounded-l py-2 px-4 text-sm focus:outline-none text-white">
-                    <button
-                        class="bg-brandRed text-white px-4 rounded-r border border-brandRed hover:bg-red-700 transition"><i
-                            class="fa-solid fa-search"></i></button>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center text-sm">
-                        <span class="text-gray-400 mr-2">Estado</span>
-                        <div class="flex bg-cardBg rounded border border-gray-700 overflow-hidden">
-                            <button class="px-3 py-1.5 bg-gray-700 text-white">Todos</button>
-                            <button class="px-3 py-1.5 text-gray-400 hover:text-white">Activo</button>
-                            <button class="px-3 py-1.5 text-gray-400 hover:text-white">Inactivo</button>
+            <form id="filtrosForm" method="GET" action="{{ url_for('proveedores') }}" class="mb-6">
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex flex-1 relative">
+                        <input type="text" name="busqueda" value="{{ busqueda }}"
+                            placeholder="Buscar por proveedor o contacto..."
+                            class="w-full bg-cardBg border border-gray-700 rounded-l py-2 px-4 text-sm focus:outline-none focus:border-brandRed text-white">
+                        <button type="submit"
+                            class="bg-brandRed text-white px-4 rounded-r border border-brandRed hover:bg-red-700 transition">
+                            <i class="fa-solid fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center text-sm">
+                            <span class="text-gray-400 mr-2">Estado</span>
+                            <select name="estado" onchange="this.form.submit()"
+                                class="bg-cardBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none focus:border-brandRed">
+                                <option value="Todos" {% if filtro_estado=='Todos' %}selected{% endif %}>Todos</option>
+                                <option value="Activo" {% if filtro_estado=='Activo' %}selected{% endif %}>Activo
+                                </option>
+                                <option value="Inactivo" {% if filtro_estado=='Inactivo' %}selected{% endif %}>Inactivo
+                                </option>
+                            </select>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-gray-400 mr-2">Suministro</span>
+                            <select name="suministro" onchange="this.form.submit()"
+                                class="bg-cardBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none focus:border-brandRed w-48">
+                                <option value="Todos">Todos</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.nombre }}" {% if filtro_suministro==cat.nombre %}selected{% endif
+                                    %}>{{ cat.nombre }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
-                    <div class="flex items-center text-sm">
-                        <span class="text-gray-400 mr-2">Categoría de Suministro</span>
-                        <select
-                            class="bg-cardBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none w-64">
-                            <option>Todos</option>
-                            <option>Llantas</option>
-                            <option>Cascos</option>
-                            <option>Aceites</option>
-                            <option>Repuestos</option>
-                            <option>Accesorios</option>
-                        </select>
-                    </div>
                 </div>
-            </div>
+            </form>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
@@ -172,11 +178,9 @@
 
                                 <td class="py-4 text-gray-400">{{ prov.contacto }}</td>
 
-                                <td class="py-4 text-gray-400">
-                                    {{ prov.correo }}
-                                    <br>
-                                    <span class="text-xs text-gray-500">{{ prov.telefono }}</span>
-                                </td>
+                                <td class="py-4 text-gray-400">{{ prov.correo }}</td>
+
+                                <td class="py-4 text-gray-400">{{ prov.telefono }}</td>
 
                                 <td class="py-4">
                                     <span class="bg-gray-800 px-2 py-1 rounded text-xs text-gray-300">{{ prov.suministro
@@ -187,9 +191,6 @@
                                     {% if prov.estado == 'Activo' %}
                                     <span class="text-green-500 text-sm"><i
                                             class="fa-solid fa-circle text-[10px] mr-1"></i>Activo</span>
-                                    {% elif prov.estado == 'Crítico' %}
-                                    <span class="text-brandRed text-sm"><i
-                                            class="fa-solid fa-circle text-[10px] mr-1"></i>Crítico</span>
                                     {% else %}
                                     <span class="text-gray-500 text-sm"><i
                                             class="fa-solid fa-circle text-[10px] mr-1"></i>Inactivo</span>
@@ -201,15 +202,20 @@
                                         <button class="hover:text-red-400 transition-colors" title="Editar">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
-                                        <button class="hover:text-red-400 transition-colors" title="Eliminar">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
+                                        <form action="{{ url_for('eliminar_proveedor', id=prov.id) }}" method="POST"
+                                            class="inline"
+                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar este proveedor? Esta acción no se puede deshacer.');">
+                                            <button type="submit" class="hover:text-red-400 transition-colors"
+                                                title="Eliminar">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="6" class="py-8 text-center text-gray-500">
+                                <td colspan="7" class="py-8 text-center text-gray-500">
                                     <i class="fa-solid fa-truck-fast text-3xl mb-2 opacity-50 block"></i>
                                     No hay proveedores registrados aún.
                                 </td>
@@ -259,21 +265,30 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Correo Electrónico</label>
-                        <input type="email" name="correo"
+                        <label class="block text-sm text-gray-400 mb-1">Correo Electrónico <span
+                                class="text-brandRed">*</span></label>
+                        <input type="email" name="correo" required title="Debe incluir un @ y un dominio válido"
                             class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Teléfono</label>
-                        <input type="text" name="telefono"
+                        <label class="block text-sm text-gray-400 mb-1">Teléfono <span
+                                class="text-brandRed">*</span></label>
+                        <input type="tel" name="telefono" required pattern="[0-9]+"
+                            title="Por favor, ingresa únicamente números"
                             class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-400 mb-1">Tipo de Suministro</label>
-                    <input type="text" name="suministro" placeholder="Ej: Llantas, Aceites, Cascos"
+                    <label class="block text-sm text-gray-400 mb-1">Tipo de Suministro <span
+                            class="text-brandRed">*</span></label>
+                    <select name="suministro" required
                         class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all">
+                        <option value="">Seleccione una categoría</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div>
@@ -283,11 +298,6 @@
                             <input type="radio" name="estado" value="Activo" checked
                                 class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
                             <span class="text-sm text-gray-300">Activo</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="estado" value="Crítico"
-                                class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
-                            <span class="text-sm text-gray-300">Crítico</span>
                         </label>
                         <label class="flex items-center">
                             <input type="radio" name="estado" value="Inactivo"

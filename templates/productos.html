@@ -12,10 +12,6 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/productos.css') }}">
 
-    <script>
-        window.ventasData = {{ ventas | tojson | safe }};
-    </script>
-
     <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
 </head>
 
@@ -77,44 +73,62 @@
 
         <main class="flex-1 overflow-y-auto p-8">
 
-            <div class="flex flex-wrap justify-between items-end mb-6 gap-4">
-                <div class="flex items-center gap-4">
-                    <button onclick="openModal('registrarProductoModal')"
-                        class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Añadir Nuevo Producto
-                    </button>
-                    <div class="relative">
-                        <input type="text" placeholder="Buscar"
-                            class="bg-darkBg border border-gray-700 rounded py-2 px-4 text-sm text-white focus:outline-none focus:border-brandRed w-64">
-                        <i class="fa-solid fa-search absolute right-3 top-2.5 text-gray-500 text-sm"></i>
-                    </div>
-                </div>
+            <form id="filtrosForm" method="GET" action="{{ url_for('productos') }}" class="mb-6">
+                <div class="flex flex-wrap justify-between items-end gap-4">
 
-                <div class="flex gap-4">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Categoría</label>
-                        <select
-                            class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
-                            <option>Todas</option>
-                        </select>
+                    <div class="flex items-center gap-4">
+                        <button type="button" onclick="openModal('registrarProductoModal')"
+                            class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Añadir Nuevo Producto
+                        </button>
+                        <div class="relative">
+                            <input type="text" name="busqueda" value="{{ busqueda }}"
+                                placeholder="Buscar por nombre o SKU..."
+                                class="bg-darkBg border border-gray-700 rounded py-2 px-4 text-sm text-white focus:outline-none focus:border-brandRed w-64">
+                            <button type="submit"
+                                class="absolute right-3 top-2.5 text-gray-500 text-sm hover:text-white">
+                                <i class="fa-solid fa-search"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Marca</label>
-                        <select
-                            class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
-                            <option>Todas</option>
-                        </select>
+
+                    <div class="flex gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Filtrar por Categoría</label>
+                            <select name="categoria" onchange="this.form.submit()"
+                                class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                                <option value="Todas">Todas</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.nombre }}" {% if filtro_cat==cat.nombre %}selected{% endif %}>{{
+                                    cat.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Filtrar por Marca</label>
+                            <select name="marca" onchange="this.form.submit()"
+                                class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                                <option value="Todas">Todas</option>
+                                {% for m in marcas %}
+                                <option value="{{ m }}" {% if filtro_marca==m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Filtrar por Estado</label>
+                            <select name="estado" onchange="this.form.submit()"
+                                class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
+                                <option value="Todos" {% if filtro_estado=='Todos' %}selected{% endif %}>Todos</option>
+                                <option value="Activo" {% if filtro_estado=='Activo' %}selected{% endif %}>Activo
+                                </option>
+                                <option value="Inactivo" {% if filtro_estado=='Inactivo' %}selected{% endif %}>Inactivo
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Filtrar por Estado</label>
-                        <select
-                            class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-sm text-white focus:outline-none w-40">
-                            <option>Activo</option>
-                            <option>Inactivo</option>
-                        </select>
-                    </div>
+
                 </div>
-            </div>
+            </form>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-cardBg border-l-4 border-brandRed rounded shadow p-4">
@@ -135,83 +149,137 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-                <div class="lg:col-span-3 bg-cardBg rounded border border-gray-800 p-5">
-                    <h3 class="text-lg font-medium mb-4 text-white">Catálogo de Productos</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-gray-400 border-b border-gray-700">
-                                    <th class="pb-3 font-medium">SKU</th>
-                                    <th class="pb-3 font-medium">Imagen</th>
-                                    <th class="pb-3 font-medium">Nombre del Producto</th>
-                                    <th class="pb-3 font-medium">Categoría</th>
-                                    <th class="pb-3 font-medium">Marca</th>
-                                    <th class="pb-3 font-medium">Stock</th>
-                                    <th class="pb-3 font-medium">Precio Venta</th>
-                                    <th class="pb-3 font-medium">Estado</th>
-                                    <th class="pb-3 font-medium text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in productos %}
-                                <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
-                                    <td class="py-3 text-gray-400">{{ item.sku }}</td>
-                                    <td class="py-3">
-                                        <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                            <i class="fa-solid fa-box text-gray-500"></i>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 text-gray-300">{{ item.nombre }}</td>
-                                    <td class="py-3 text-gray-400">{{ item.categoria }}</td>
-                                    <td class="py-3 text-gray-400">{{ item.marca }}</td>
-                                    <td class="py-3 {{ 'text-brandRed' if item.stock <= 23 else 'text-white' }}">{{
-                                        item.stock }}</td>
-                                    <td class="py-3 text-white">${{ item.precio }}</td>
-                                    <td
-                                        class="py-3 {{ 'text-gray-300' if item.estado == 'Activo' else 'text-brandRed' }}">
-                                        {{ item.estado }}</td>
-                                    <td class="py-3">
-                                        <div class="flex justify-center gap-3 text-brandRed">
-                                            <button class="hover:text-red-400"><i
-                                                    class="fa-solid fa-pencil"></i></button>
-                                            <button class="hover:text-red-400"><i
-                                                    class="fa-regular fa-trash-can"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="flex justify-center mt-6">
-                        <div class="flex items-center gap-1 bg-darkBg rounded border border-gray-800 p-1">
-                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i
-                                    class="fa-solid fa-angles-left text-xs"></i></button>
-                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i
-                                    class="fa-solid fa-angle-left text-xs"></i></button>
-                            <button class="px-3 py-1 bg-brandRed text-white rounded">1</button>
-                            <button class="px-3 py-1 text-gray-400 hover:text-white rounded">2</button>
-                            <button class="px-3 py-1 text-gray-400 hover:text-white rounded">3</button>
-                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i
-                                    class="fa-solid fa-angle-right text-xs"></i></button>
-                            <button class="px-2 py-1 text-gray-500 hover:text-white"><i
-                                    class="fa-solid fa-angles-right text-xs"></i></button>
-                        </div>
-                    </div>
+            <div class="bg-cardBg border border-gray-800 rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-white">
+                        Ventas últimos 7 días: <span id="nombreProductoGrafica"
+                            class="text-brandRed font-bold">Selecciona un producto en la tabla</span>
+                    </h3>
                 </div>
-
-                <div class="lg:col-span-1 bg-cardBg border border-gray-800 rounded-lg p-5 flex flex-col">
-                    <h3 class="text-lg font-medium mb-4 text-white">Tendencia de Ventas<br><span
-                            class="text-sm font-normal text-gray-400">(Productos)</span></h3>
-                    <div class="relative flex-1 min-h-[300px] w-full mt-4">
-                        <canvas id="sideSalesChart"></canvas>
-                    </div>
+                <div class="relative w-full min-h-[280px]">
+                    <canvas id="productSalesChart"></canvas>
                 </div>
-
             </div>
+
+            <div class="bg-cardBg rounded border border-gray-800 p-5 shadow-lg">
+                <h3 class="text-lg font-medium mb-4 text-white">Catálogo de Productos</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-gray-700">
+                                <th class="pb-3 font-medium">SKU</th>
+                                <th class="pb-3 font-medium">Nombre del Producto</th>
+                                <th class="pb-3 font-medium">Categoría</th>
+                                <th class="pb-3 font-medium">Marca</th>
+                                <th class="pb-3 font-medium">Stock</th>
+                                <th class="pb-3 font-medium">Precio Compra</th>
+                                <th class="pb-3 font-medium">Precio Venta</th>
+                                <th class="pb-3 font-medium">Estado</th>
+                                <th class="pb-3 font-medium text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in productos %}
+                            <tr class="fila-producto border-b border-gray-800/50 hover:bg-gray-800 transition-colors cursor-pointer"
+                                onclick="seleccionarProducto({{ item.id }}, this)">
+                                <td class="py-3 text-gray-400">{{ item.sku }}</td>
+                                <td class="py-3 text-white font-medium">{{ item.nombre }}</td>
+                                <td class="py-3 text-gray-400">{{ item.categoria }}</td>
+                                <td class="py-3 text-gray-400">{{ item.marca }}</td>
+                                <td class="py-3 font-bold {{ 'text-brandRed' if item.stock <= 10 else 'text-white' }}">
+                                    {{ item.stock }}</td>
+                                <td class="py-3 text-gray-400">${{ item.precio_compra }}</td>
+                                <td class="py-3 text-green-400">${{ item.precio }}</td>
+                                <td class="py-3 {{ 'text-gray-300' if item.estado == 'Activo' else 'text-brandRed' }}">
+                                    {{ item.estado }}</td>
+                                <td class="py-3 text-center">
+                                    <form action="{{ url_for('eliminar_producto', id=item.id) }}" method="POST"
+                                        class="inline"
+                                        onsubmit="event.stopPropagation(); return confirm('¿Estás seguro de que deseas eliminar este producto?');">
+                                        <button type="submit" class="text-brandRed hover:text-red-400 transition-colors"
+                                            title="Eliminar">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="py-6 text-center text-gray-500 italic">No se encontraron
+                                    productos.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <script>
+                const datosVentasProductos = {{ ventas | tojson | safe }};
+                let myChart = null;
+
+                function seleccionarProducto(idProducto, filaElemento) {
+                    // 1. Resaltar la fila seleccionada
+                    document.querySelectorAll('.fila-producto').forEach(f => {
+                        f.classList.remove('bg-gray-800', 'border-brandRed', 'border-l-4');
+                    });
+                    if (filaElemento) {
+                        filaElemento.classList.add('bg-gray-800', 'border-brandRed', 'border-l-4');
+                    }
+
+                    // 2. Obtener datos del producto seleccionado
+                    const dataObj = datosVentasProductos[idProducto];
+                    if (!dataObj) return;
+
+                    // 3. Cambiar el título
+                    document.getElementById('nombreProductoGrafica').innerText = dataObj.nombre;
+
+                    // 4. Dibujar la gráfica
+                    const ctx = document.getElementById('productSalesChart').getContext('2d');
+                    if (myChart) myChart.destroy();
+
+                    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(217, 27, 27, 0.5)');
+                    gradient.addColorStop(1, 'rgba(217, 27, 27, 0.0)');
+
+                    myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dataObj.labels,
+                            datasets: [{
+                                label: 'Unidades Vendidas',
+                                data: dataObj.data,
+                                borderColor: '#d91b1b',
+                                backgroundColor: gradient,
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#0f0f0f',
+                                pointBorderColor: '#d91b1b',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#9ca3af', stepSize: 1 } },
+                                x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                            }
+                        }
+                    });
+                }
+
+                // Autoseleccionar el primer producto al cargar la página
+                document.addEventListener('DOMContentLoaded', () => {
+                    const primerFila = document.querySelector('.fila-producto');
+                    if (primerFila) {
+                        primerFila.click();
+                    }
+                });
+            </script>
         </main>
     </div>
 
@@ -251,11 +319,11 @@
                         <select name="categoria" required
                             class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
                             <option value="">Seleccionar categoría</option>
-                            <option value="Accesorios">Accesorios</option>
-                            <option value="Lubricantes">Lubricantes</option>
-                            <option value="Repuestos">Repuestos</option>
-                            <option value="Llantas">Llantas</option>
-                            <option value="Cascos">Cascos</option>
+
+                            {% for cat in categorias %}
+                            <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
+                            {% endfor %}
+
                         </select>
                     </div>
                     <div>
@@ -285,7 +353,7 @@
                                 class="text-brandRed">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">$</span>
-                            <input type="number" min="0" step="0.01"
+                            <input type="number" name="precio_compra" min="0" step="0.01" required
                                 class="w-full bg-darkBg border border-gray-700 rounded p-2.5 pl-7 text-sm text-white focus:border-brandRed focus:outline-none">
                         </div>
                     </div>
