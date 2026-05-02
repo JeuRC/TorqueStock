@@ -726,7 +726,7 @@ def movimientos():
 @app.route('/reportes')
 @login_required
 def reportes():
-    # 1. Opciones de Meses (Mantenemos tu lógica)
+    # 1. Opciones de Meses
     meses_db = db.session.query(
         extract('month', Movimiento.fecha).label('mes'),
         extract('year', Movimiento.fecha).label('anio')
@@ -740,33 +740,74 @@ def reportes():
 
     hoy = datetime.now()
 
-    # --- DATOS PARA GRÁFICA 1: Ventas ---
+    # Pre-cache de precios para calcular ingresos de ventas rápidamente
+    productos_all = Producto.query.all()
+    precios_venta = {}
+    for p in productos_all:
+        try:
+            precios_venta[p.nombre] = float(str(p.precio).replace('$', '').replace(',', ''))
+        except:
+            precios_venta[p.nombre] = 0.0
+
+    # --- DATOS PARA GRÁFICA 1: Ventas (Unidades e Ingresos) ---
     lbl_ventas = []
-    dat_ventas = []
+    
+    # Traer todos los movimientos de salida de los últimos 30 días
+    hace_30 = hoy - timedelta(days=30)
+    movimientos_salida = Movimiento.query.filter(
+        db.func.lower(Movimiento.tipo) == 'salida', Movimiento.fecha >= hace_30
+    ).all()
+
+    dict_unidades = {}
+    dict_ingresos = {}
+    ventas_mes_actual = 0.0
+    
+    # Preparamos los últimos 30 días
     for i in range(29, -1, -1):
         fecha = hoy - timedelta(days=i)
-        lbl_ventas.append(fecha.strftime('%d %b'))
-        v = db.session.query(db.func.sum(Movimiento.cantidad)).filter(
-            Movimiento.tipo == 'salida', db.func.date(Movimiento.fecha) == fecha.date()
-        ).scalar()
+        lbl = fecha.strftime('%d %b')
+        lbl_ventas.append(lbl)
+        dict_unidades[lbl] = 0
+        dict_ingresos[lbl] = 0.0
+
+    # Llenamos con los datos reales
+    for mov in movimientos_salida:
+        fecha_real = mov.fecha - timedelta(hours=5) if mov.fecha else hoy
+        lbl = fecha_real.strftime('%d %b')
+        
         try:
-            val = abs(int(str(v).replace('-', '').replace('+', ''))) if v else 0
-        except: val = 0
-        dat_ventas.append(val)
+            cant = abs(int(str(mov.cantidad).replace('-', '').replace('+', '').strip()))
+        except: cant = 0
+        
+        precio_v = precios_venta.get(mov.item, 0.0)
+        ingreso = cant * precio_v
+
+        if lbl in dict_unidades:
+            dict_unidades[lbl] += cant
+            dict_ingresos[lbl] += ingreso
+            
+        # Sumar al recuento del mes actual
+        if fecha_real.month == hoy.month and fecha_real.year == hoy.year:
+            ventas_mes_actual += ingreso
+
+    dat_ventas = [dict_unidades[lbl] for lbl in lbl_ventas]
+    dat_ingresos = [dict_ingresos[lbl] for lbl in lbl_ventas]
+    texto_recuento_mes = f"Total recaudado este mes: ${ventas_mes_actual:,.2f}"
 
     # --- DATOS PARA GRÁFICA 2: Inventario Bajo ---
     bajo_stock = Producto.query.filter(Producto.stock < 10).order_by(Producto.stock.asc()).limit(8).all()
     lbl_stock = [p.nombre[:15]+"..." if len(p.nombre)>15 else p.nombre for p in bajo_stock]
     dat_stock = [p.stock for p in bajo_stock]
 
-    # --- DATOS PARA GRÁFICA 3: Valor por Categoría ---
-    productos = Producto.query.filter(Producto.stock > 0).all()
+    # --- DATOS PARA GRÁFICA 3: Valor por Categoría (AHORA POR PRECIO DE COMPRA) ---
+    productos_stock = Producto.query.filter(Producto.stock > 0).all()
     valor_cat = {}
-    for p in productos:
+    for p in productos_stock:
         cat = p.categoria or 'Sin categoría'
         try:
-            precio = float(p.precio.replace('$', '').replace(',', ''))
-            valor_cat[cat] = valor_cat.get(cat, 0) + (precio * p.stock)
+            # CAMBIO: Usamos precio_compra en vez de precio
+            precio_c = float(str(p.precio_compra).replace('$', '').replace(',', ''))
+            valor_cat[cat] = valor_cat.get(cat, 0) + (precio_c * p.stock)
         except: pass
     lbl_valor = list(valor_cat.keys())
     dat_valor = list(valor_cat.values())
@@ -782,7 +823,15 @@ def reportes():
 
     # Empaquetamos todo para enviarlo al HTML
     graficas = {
-        'ventas': {'labels': lbl_ventas, 'data': dat_ventas, 'label': 'Unidades Vendidas', 'defType': 'line'},
+        'ventas': {
+            'labels': lbl_ventas, 
+            'data': dat_ventas, 
+            'label': 'Unidades', 
+            'data2': dat_ingresos,      # <- ¡Nuevo dataset de dinero!
+            'label2': 'Ingresos ($)',
+            'defType': 'line',
+            'subtitulo': f'Tendencia de ventas de los últimos 30 días. {texto_recuento_mes}'
+        },
         'bajo_stock': {'labels': lbl_stock, 'data': dat_stock, 'label': 'Unidades Restantes', 'defType': 'bar'},
         'valor_total': {'labels': lbl_valor, 'data': dat_valor, 'label': 'Capital Invertido ($)', 'defType': 'bar'},
         'movimientos': {'labels': lbl_mov, 'data': dat_mov, 'label': 'Transacciones Diarias', 'defType': 'line'}
@@ -801,6 +850,7 @@ def generar_reporte():
     datos = []
     titulo = "Reporte"
     columnas = []
+    extra_data = {} # Nuevo diccionario para pasar totales generales al PDF
     
     # --- Convertir Logo a Base64 ---
     logo_base64 = ""
@@ -818,22 +868,54 @@ def generar_reporte():
     except:
         pass
 
-    # Extraer el mes y año si se seleccionó uno
+    # Extraer el mes y año
     if periodo:
         anio, mes = int(periodo.split('-')[0]), int(periodo.split('-')[1])
     else:
         anio, mes = datetime.now().year, datetime.now().month
 
-    # --- LÓGICA DE REPORTES (Históricos vs Actuales) ---
-    
+    # --- LÓGICA DE REPORTES ---
     if tipo_reporte == 'ventas':
-        titulo = f"Reporte de Ventas - {mes:02d}/{anio}"
-        datos = Movimiento.query.filter(
+        titulo = f"Reporte Financiero de Ventas - {mes:02d}/{anio}"
+        movimientos = Movimiento.query.filter(
             extract('year', Movimiento.fecha) == anio,
             extract('month', Movimiento.fecha) == mes,
             Movimiento.tipo == 'salida'
         ).all()
-        columnas = ['Fecha', 'Producto', 'Cantidad', 'Cliente']
+        
+        # Diccionario rápido de precios de venta
+        productos_all = Producto.query.all()
+        precios_venta = {}
+        for p in productos_all:
+            try:
+                precios_venta[p.nombre] = float(str(p.precio).replace('$', '').replace(',', ''))
+            except:
+                precios_venta[p.nombre] = 0.0
+
+        total_mensual = 0.0
+        datos_enriquecidos = []
+        
+        for mov in movimientos:
+            try: cant = abs(int(str(mov.cantidad).replace('-', '').replace('+', '').strip()))
+            except: cant = 0
+            
+            precio_u = precios_venta.get(mov.item, 0.0)
+            ingreso_total = cant * precio_u
+            total_mensual += ingreso_total
+            
+            # Guardamos los datos calculados para la tabla
+            datos_enriquecidos.append({
+                'fecha': mov.fecha,
+                'item': mov.item,
+                'cantidad': cant,
+                'proveedor_cliente': mov.proveedor_cliente,
+                'precio_unitario': precio_u,
+                'ingreso_total': ingreso_total
+            })
+            
+        datos = datos_enriquecidos
+        columnas = ['Fecha', 'Producto', 'Cant.', 'Precio Unit.', 'Ingreso Total', 'Cliente']
+        extra_data['total_mensual'] = total_mensual # Guardamos el gran total
         
     elif tipo_reporte == 'movimientos':
         titulo = f"Historial de Movimientos - {mes:02d}/{anio}"
@@ -844,13 +926,11 @@ def generar_reporte():
         columnas = ['Fecha', 'Tipo', 'Producto', 'Cant.', 'Detalle']
 
     elif tipo_reporte == 'valor_total':
-        # El inventario es actual, ignoramos el filtro de mes
-        titulo = "Valorización de Inventario Actual"
+        titulo = "Valorización de Inventario"
         datos = Producto.query.filter(Producto.stock > 0).all()
-        columnas = ['SKU', 'Producto', 'Stock', 'Precio Unit.', 'Subtotal']
+        columnas = ['SKU', 'Producto', 'Stock', 'Precio Compra', 'Subtotal']
         
     elif tipo_reporte == 'bajo_stock':
-        # El stock bajo es actual, ignoramos el filtro de mes
         titulo = "Alerta de Bajo Stock Actual"
         datos = Producto.query.filter(Producto.stock < 10).all()
         columnas = ['SKU', 'Producto', 'Categoría', 'Stock Actual']
@@ -860,6 +940,7 @@ def generar_reporte():
                            tipo=tipo_reporte, 
                            datos=datos, 
                            columnas=columnas,
+                           extra_data=extra_data, # Pasamos los totales
                            logo_b64=logo_base64,
                            tipo_img=tipo_img)
 

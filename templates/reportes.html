@@ -20,7 +20,8 @@
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque" class="h-8 w-8 object-contain mr-3">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -40,8 +41,7 @@
                         <i class="fa-solid fa-chart-bar w-6"></i> Reportes
                     </a>
                 </li>
-                <li><a href="/movimientos"
-                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                <li><a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-cardHover transition-colors"><i
                             class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
                 {% if session.get('user_rol') == 'Administrador' %}
                 <li><a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-cardHover transition-colors"><i
@@ -55,19 +55,21 @@
 
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
-            
+
             <div class="flex items-center space-x-6">
                 <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
                         <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
                         <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
                     </div>
                 </div>
-                
-                <a href="/logout" class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
                 </a>
             </div>
@@ -186,22 +188,18 @@
                 let reporteActual = 'ventas';
 
                 const textosCabecera = {
-                    'ventas': { t: 'Vista Previa de Ventas', s: 'Tendencia de ventas de los últimos 30 días.' },
+                    // Dinámico: Toma el texto de recuento del mes generado en Python
+                    'ventas': { t: 'Vista Previa de Ventas', s: datosGraficas['ventas'].subtitulo },
                     'bajo_stock': { t: 'Top Productos con Bajo Stock', s: 'Visualización de los productos más críticos.' },
-                    'valor_total': { t: 'Valor de Inventario por Categoría', s: 'Distribución de capital invertido actualmente.' },
+                    'valor_total': { t: 'Valor de Inventario (Precio Compra)', s: 'Distribución de capital invertido actualmente.' },
                     'movimientos': { t: 'Volumen de Transacciones', s: 'Actividad de entradas y salidas en los últimos 15 días.' }
                 };
 
                 function cambiarReporte(tipo) {
                     reporteActual = tipo;
-
-                    // 1. Sincronizar el select oculto para que el Botón PDF exporte lo correcto
                     document.getElementById('tipoReporteSelect').value = tipo;
-
-                    // 2. Cambiar tipo de gráfica por defecto sugerida
                     document.getElementById('selectorTipoGrafica').value = datosGraficas[tipo].defType;
 
-                    // 3. Resetear el estilo de todas las tarjetas (Inactivas)
                     document.querySelectorAll('.tarjeta-reporte').forEach(card => {
                         card.className = "tarjeta-reporte bg-cardBg border border-gray-800 hover:border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer relative transition-all";
                         card.querySelector('.checkmark-icon').classList.add('hidden');
@@ -210,7 +208,6 @@
                         card.querySelector('.texto-titulo').classList.replace('text-white', 'text-gray-400');
                     });
 
-                    // 4. Aplicar el estilo Activo (Recuadro Rojo) a la tarjeta clickeada
                     const activeCard = document.getElementById('card-' + tipo);
                     activeCard.className = "tarjeta-reporte bg-cardBg border border-brandRed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer relative shadow-[0_0_15px_rgba(217,27,27,0.15)] transition-all";
                     activeCard.querySelector('.checkmark-icon').classList.remove('hidden');
@@ -218,11 +215,9 @@
                     activeCard.querySelector('.icono').className = activeCard.querySelector('.icono').className.replace('text-brandRed/70', 'text-brandRed');
                     activeCard.querySelector('.texto-titulo').classList.replace('text-gray-400', 'text-white');
 
-                    // 5. Actualizar los títulos
                     document.getElementById('tituloGrafica').innerText = textosCabecera[tipo].t;
                     document.getElementById('subtituloGrafica').innerText = textosCabecera[tipo].s;
 
-                    // 6. Redibujar la gráfica
                     actualizarGrafica();
                 }
 
@@ -231,39 +226,87 @@
                     const dataConfig = datosGraficas[reporteActual];
                     const ctx = document.getElementById('detailedSalesChart').getContext('2d');
 
-                    if (myChart) { myChart.destroy(); } // Destruir la anterior para evitar superposiciones
+                    if (myChart) { myChart.destroy(); }
+
+                    // Dataset 1 (Unidades, Movimientos, o Valor Primario)
+                    let datasets = [{
+                        label: dataConfig.label,
+                        data: dataConfig.data,
+                        backgroundColor: tipoVisual === 'bar' ? 'rgba(217, 27, 27, 0.6)' : 'rgba(217, 27, 27, 0.1)',
+                        borderColor: '#d91b1b',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: tipoVisual === 'line',
+                        borderRadius: tipoVisual === 'bar' ? 4 : 0,
+                        yAxisID: 'y' // Eje Izquierdo
+                    }];
+
+                    // Dataset 2 (Solo se añade si existen datos de ingresos financieros en el backend)
+                    if (dataConfig.data2) {
+                        datasets.push({
+                            label: dataConfig.label2,
+                            data: dataConfig.data2,
+                            backgroundColor: tipoVisual === 'bar' ? 'rgba(59, 130, 246, 0.6)' : 'rgba(59, 130, 246, 0.1)', // Azul
+                            borderColor: '#3b82f6',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: tipoVisual === 'line',
+                            borderRadius: tipoVisual === 'bar' ? 4 : 0,
+                            yAxisID: 'y1' // Eje Derecho
+                        });
+                    }
+
+                    // Configuración de escalas duales (Izquierda: Cantidad | Derecha: Dinero)
+                    let scalesConfig = {
+                        y: {
+                            type: 'linear', display: true, position: 'left',
+                            ticks: { color: '#6b7280' }, grid: { color: '#374151' }, beginAtZero: true
+                        },
+                        x: { ticks: { color: '#6b7280' }, grid: { display: false } }
+                    };
+
+                    if (dataConfig.data2) {
+                        scalesConfig.y1 = {
+                            type: 'linear', display: true, position: 'right',
+                            ticks: { color: '#6b7280' },
+                            grid: { drawOnChartArea: false }, // Evita que se crucen las líneas grises
+                            beginAtZero: true
+                        };
+                    }
 
                     myChart = new Chart(ctx, {
                         type: tipoVisual,
                         data: {
                             labels: dataConfig.labels,
-                            datasets: [{
-                                label: dataConfig.label,
-                                data: dataConfig.data,
-                                backgroundColor: tipoVisual === 'bar' ? 'rgba(217, 27, 27, 0.6)' : 'rgba(217, 27, 27, 0.1)',
-                                borderColor: '#d91b1b',
-                                borderWidth: 2,
-                                tension: 0.3, // Suaviza la curva de la línea
-                                fill: tipoVisual === 'line',
-                                borderRadius: tipoVisual === 'bar' ? 4 : 0
-                            }]
+                            datasets: datasets
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { labels: { color: '#9ca3af', font: { family: 'sans-serif' } } } },
-                            scales: {
-                                y: { ticks: { color: '#6b7280' }, grid: { color: '#374151' }, beginAtZero: true },
-                                x: { ticks: { color: '#6b7280' }, grid: { display: false } }
-                            }
+                            plugins: {
+                                legend: { labels: { color: '#9ca3af', font: { family: 'sans-serif' } } },
+                                // Tooltip para dar formato a los números como Moneda si es el eje financiero
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) { label += ': '; }
+                                            if (context.dataset.yAxisID === 'y1' || reporteActual === 'valor_total') {
+                                                label += '$' + context.raw.toLocaleString('es-CO');
+                                            } else {
+                                                label += context.raw;
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: scalesConfig
                         }
                     });
                 }
 
-                // Arrancar de forma segura solo cuando la página y Chart.js estén listos
                 document.addEventListener('DOMContentLoaded', function () {
-                    setTimeout(() => {
-                        cambiarReporte('ventas');
-                    }, 100);
+                    setTimeout(() => { cambiarReporte('ventas'); }, 100);
                 });
             </script>
         </main>

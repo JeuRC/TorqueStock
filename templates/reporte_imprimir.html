@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ titulo }} - Torque Bikers</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <style>
         /* Estilos base para asegurar que Tailwind se renderice bien en el PDF */
-        body { background-color: #f3f4f6; }
+        body {
+            background-color: #f3f4f6;
+        }
     </style>
 </head>
+
 <body class="flex items-center justify-center min-h-screen">
 
     <div id="pantalla-carga" class="text-center">
@@ -23,20 +27,24 @@
 
     <div style="position: absolute; left: -9999px; top: -9999px;">
         <div id="reporte-contenido" class="bg-white" style="width: 100%; max-width: 1000px; padding: 0;">
-        
+
             <div class="flex justify-between items-end border-b-4 border-red-600 pb-6 mb-8">
                 <div class="flex items-center gap-4">
                     {% if logo_b64 %}
-                    <img src="data:image/{{ tipo_img }};base64,{{ logo_b64 }}" alt="Torque Bikers Logo" style="height: 80px; object-fit: contain;">
+                    <img src="data:image/{{ tipo_img }};base64,{{ logo_b64 }}" alt="Torque Bikers Logo"
+                        style="height: 80px; object-fit: contain;">
                     {% endif %}
                     <div>
-                        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight" style="margin: 0;">TORQUE <span class="text-red-600">BIKERS</span></h1>
-                        <p class="text-sm text-gray-500 font-medium uppercase tracking-widest mt-1">Gestión de Inventario</p>
+                        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight" style="margin: 0;">TORQUE <span
+                                class="text-red-600">BIKERS</span></h1>
+                        <p class="text-sm text-gray-500 font-medium uppercase tracking-widest mt-1">Gestión de
+                            Inventario</p>
                     </div>
                 </div>
                 <div class="text-right">
                     <h2 class="text-2xl font-bold text-gray-800" style="margin: 0;">{{ titulo }}</h2>
-                    <p class="text-sm text-gray-500 mt-1">Generado el: <span id="fecha-actual" class="font-medium"></span></p>
+                    <p class="text-sm text-gray-500 mt-1">Generado el: <span id="fecha-actual"
+                            class="font-medium"></span></p>
                 </div>
             </div>
 
@@ -44,54 +52,80 @@
                 <thead>
                     <tr style="background-color: #1f2937; color: white;">
                         {% for col in columnas %}
-                        <th style="padding: 12px; font-weight: 600; text-transform: uppercase; border: 1px solid #374151;">{{ col }}</th>
+                        <th
+                            style="padding: 12px; font-weight: 600; text-transform: uppercase; border: 1px solid #374151;">
+                            {{ col }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for fila in datos %}
                     <tr style="border-bottom: 1px solid #e5e7eb;">
-                        
+
                         {% if tipo == 'ventas' %}
-                            <td style="padding: 12px; color: #4b5563;">{{ fila.fecha.strftime('%d/%m/%Y') if fila.fecha else '-' }}</td>
-                            <td style="padding: 12px; font-weight: 500;">{{ fila.item }}</td>
-                            <td style="padding: 12px; color: #dc2626; font-weight: bold;">{{ fila.cantidad }}</td>
-                            <td style="padding: 12px; color: #4b5563;">{{ fila.proveedor_cliente or 'Consumidor Final' }}</td>
-                            
+                        <td style="padding: 12px; color: #4b5563;">{{ fila.fecha.strftime('%d/%m/%Y') if fila.fecha else
+                            '-' }}</td>
+                        <td style="padding: 12px; font-weight: 500;">{{ fila.item }}</td>
+                        <td style="padding: 12px; color: #dc2626; font-weight: bold; text-align: center;">{{
+                            fila.cantidad }}</td>
+                        <td style="padding: 12px; color: #4b5563;">${{ "{:,.2f}".format(fila.precio_unitario) }}</td>
+                        <td style="padding: 12px; color: #15803d; font-weight: bold;">${{
+                            "{:,.2f}".format(fila.ingreso_total) }}</td>
+                        <td style="padding: 12px; color: #4b5563; font-size: 12px;">{{ fila.proveedor_cliente or
+                            'Consumidor Final' }}</td>
+
                         {% elif tipo == 'valor_total' %}
-                            <td style="padding: 12px; color: #6b7280; font-family: monospace;">{{ fila.sku }}</td>
-                            <td style="padding: 12px; font-weight: 500;">{{ fila.nombre }}</td>
-                            <td style="padding: 12px;">{{ fila.stock }}</td>
-                            <td style="padding: 12px; color: #4b5563;">${{ fila.precio }}</td>
-                            <td style="padding: 12px; color: #15803d; font-weight: bold;">
-                                {% set precio_limpio = fila.precio|replace('$', '')|replace(',', '')|float %}
-                                ${{ "{:,.2f}".format(precio_limpio * fila.stock) }}
-                            </td>
-                            
+                        <td style="padding: 12px; color: #6b7280; font-family: monospace;">{{ fila.sku }}</td>
+                        <td style="padding: 12px; font-weight: 500;">{{ fila.nombre }}</td>
+                        <td style="padding: 12px; text-align: center;">{{ fila.stock }}</td>
+                        <td style="padding: 12px; color: #4b5563;">${{ fila.precio_compra }}</td>
+                        <td style="padding: 12px; color: #15803d; font-weight: bold;">
+                            <!-- Usamos precio_compra en vez de precio de venta -->
+                            {% set precio_limpio = fila.precio_compra|replace('$', '')|replace(',', '')|float %}
+                            ${{ "{:,.2f}".format(precio_limpio * fila.stock) }}
+                        </td>
+
                         {% elif tipo == 'bajo_stock' %}
-                            <td style="padding: 12px; color: #6b7280; font-family: monospace;">{{ fila.sku }}</td>
-                            <td style="padding: 12px; font-weight: 500;">{{ fila.nombre }}</td>
-                            <td style="padding: 12px;">{{ fila.categoria }}</td>
-                            <td style="padding: 12px; color: #dc2626; font-weight: bold; font-size: 1.125rem;">{{ fila.stock }}</td>
-                            
+                        <td style="padding: 12px; color: #6b7280; font-family: monospace;">{{ fila.sku }}</td>
+                        <td style="padding: 12px; font-weight: 500;">{{ fila.nombre }}</td>
+                        <td style="padding: 12px;">{{ fila.categoria }}</td>
+                        <td style="padding: 12px; color: #dc2626; font-weight: bold; font-size: 1.125rem;">{{ fila.stock
+                            }}</td>
+
                         {% elif tipo == 'movimientos' %}
-                            <td style="padding: 12px; color: #4b5563;">{{ fila.fecha.strftime('%d/%m/%Y %H:%M') if fila.fecha else '-' }}</td>
-                            <td style="padding: 12px; font-weight: 500; text-transform: uppercase; font-size: 12px;">{{ fila.tipo }}</td>
-                            <td style="padding: 12px;">{{ fila.item }}</td>
-                            <td style="padding: 12px; font-weight: bold;">{{ fila.cantidad }}</td>
-                            <td style="padding: 12px; color: #4b5563; font-size: 12px;">{{ fila.proveedor_cliente or '-' }}</td>
+                        <td style="padding: 12px; color: #4b5563;">{{ fila.fecha.strftime('%d/%m/%Y %H:%M') if
+                            fila.fecha else '-' }}</td>
+                        <td style="padding: 12px; font-weight: 500; text-transform: uppercase; font-size: 12px;">{{
+                            fila.tipo }}</td>
+                        <td style="padding: 12px;">{{ fila.item }}</td>
+                        <td style="padding: 12px; font-weight: bold;">{{ fila.cantidad }}</td>
+                        <td style="padding: 12px; color: #4b5563; font-size: 12px;">{{ fila.proveedor_cliente or '-' }}
+                        </td>
                         {% endif %}
-                        
+
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" style="padding: 32px; text-align: center; color: #6b7280; font-style: italic;">No hay registros para este período.</td>
+                        <td colspan="6" style="padding: 32px; text-align: center; color: #6b7280; font-style: italic;">
+                            No hay registros para este período.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                <!-- NUEVO: Agregamos el gran total abajo de la tabla solo si es el reporte de ventas -->
+                {% if tipo == 'ventas' and extra_data.total_mensual is defined %}
+                <tfoot>
+                    <tr style="background-color: #f3f4f6; border-top: 2px solid #1f2937;">
+                        <td colspan="4" style="padding: 12px; text-align: right; font-weight: bold; color: #1f2937;">
+                            TOTAL RECAUDADO EN EL MES:</td>
+                        <td colspan="2" style="padding: 12px; color: #15803d; font-weight: bold; font-size: 16px;">${{
+                            "{:,.2f}".format(extra_data.total_mensual) }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
             </table>
 
-            <div style="margin-top: 64px; padding-top: 32px; border-top: 1px solid #d1d5db; text-align: center; font-size: 12px; color: #9ca3af;">
+            <div
+                style="margin-top: 64px; padding-top: 32px; border-top: 1px solid #d1d5db; text-align: center; font-size: 12px; color: #9ca3af;">
                 <p>Documento oficial generado por el Sistema TorqueStock.</p>
                 <p>Torque Bikers - Todos los derechos reservados.</p>
             </div>
@@ -102,19 +136,19 @@
         // Imprime la fecha actual
         const hoy = new Date();
         document.getElementById('fecha-actual').textContent = hoy.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-        
+
         // Función mágica para generar y descargar
-        window.onload = function() {
+        window.onload = function () {
             const elemento = document.getElementById('reporte-contenido');
-            
+
             // Opciones de configuración del PDF
             const opciones = {
-                margin:       15, // 15mm de margen en todas las hojas automáticamente
-                filename:     '{{ titulo|replace(" ", "_") }}.pdf',
-                image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'css', avoid: 'tr' } // LA MAGIA: Evita cortar filas de tabla (tr)
+                margin: 15, // 15mm de margen en todas las hojas automáticamente
+                filename: '{{ titulo|replace(" ", "_") }}.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'css', avoid: 'tr' } // LA MAGIA: Evita cortar filas de tabla (tr)
             };
 
             // Damos 500ms para asegurar que todo el CSS y fuentes carguen bien
@@ -127,4 +161,5 @@
         };
     </script>
 </body>
+
 </html>

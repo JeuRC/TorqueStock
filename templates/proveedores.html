@@ -18,7 +18,8 @@
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque" class="h-8 w-8 object-contain mr-3">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -72,19 +73,21 @@
 
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
-            
+
             <div class="flex items-center space-x-6">
                 <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
                         <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
                         <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
                     </div>
                 </div>
-                
-                <a href="/logout" class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
                 </a>
             </div>
@@ -211,22 +214,20 @@
                                 </td>
                                 {% if session.get('user_rol') == 'Administrador' %}
                                 <td class="py-4 text-center">
-                                    <div class="flex justify-center gap-3 text-brandRed">
-                                        <button type="button"
-                                            onclick='abrirModalEditarProv({{ prov.id }}, {{ prov.nombre | tojson }}, {{ prov.contacto | tojson }}, {{ prov.correo | tojson }}, {{ prov.telefono | tojson }}, {{ prov.suministro | tojson }}, {{ prov.estado | tojson }})'
-                                            class="text-blue-500 hover:text-blue-400 transition-colors mr-3"
-                                            title="Editar">
-                                            <i class="fa-regular fa-pen-to-square"></i>
+                                    <button type="button"
+                                        onclick='abrirModalEditarProv({{ prov.id }}, {{ prov.nombre | tojson }}, {{ prov.contacto | tojson }}, {{ prov.correo | tojson }}, {{ prov.telefono | tojson }}, {{ prov.suministro | tojson }}, {{ prov.estado | tojson }})'
+                                        class="text-blue-500 hover:text-blue-400 transition-colors mr-3" title="Editar">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+
+                                    <form action="{{ url_for('eliminar_proveedor', id=prov.id) }}" method="POST"
+                                        class="inline"
+                                        onsubmit="return confirm('¿Estás seguro de que deseas eliminar este proveedor? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="text-brandRed hover:text-red-400 transition-colors"
+                                            title="Eliminar">
+                                            <i class="fa-regular fa-trash-can"></i>
                                         </button>
-                                        <form action="{{ url_for('eliminar_proveedor', id=prov.id) }}" method="POST"
-                                            class="inline"
-                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar este proveedor? Esta acción no se puede deshacer.');">
-                                            <button type="submit" class="hover:text-red-400 transition-colors"
-                                                title="Eliminar">
-                                                <i class="fa-regular fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    </form>
                                 </td>
                                 {% endif %}
                             </tr>

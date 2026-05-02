@@ -62,15 +62,6 @@
     background: #b91c1c;
 }
 
-/* Estilo para el botón de guardar */
-button[type="submit"] {
-    background-color: #dc2626;
-}
-
-button[type="submit"]:hover {
-    background-color: #b91c1c;
-}
-
 /* Efecto glow para botones */
 .glow-button:hover {
     box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
