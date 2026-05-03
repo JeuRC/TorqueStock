@@ -83,7 +83,38 @@
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
+            <!-- Inicio Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
+                {% for category, message in messages %}
+                <!-- Usamos bg-green-600 para éxito y bg-brandRed para errores -->
+                <div
+                    class="toast-mensaje px-6 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 transition-opacity duration-500 transform translate-y-0 opacity-100 {{ 'bg-green-600' if category == 'success' else 'bg-brandRed' }}">
+                    {% if category == 'success' %}
+                    <i class="fa-solid fa-circle-check"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
 
+            <!-- Script para ocultar automáticamente el toast después de 4 segundos -->
+            <script>
+                setTimeout(() => {
+                    const toasts = document.querySelectorAll('.toast-mensaje');
+                    toasts.forEach(toast => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0'); // Inicia el desvanecimiento
+                        setTimeout(() => toast.remove(), 500); // Lo elimina del HTML tras la animación
+                    });
+                }, 4000); // 4000 milisegundos = 4 segundos
+            </script>
+            {% endif %}
+            {% endwith %}
+            <!-- Fin Mostrar mensajes flash -->
             <form id="filtrosForm" method="GET" action="{{ url_for('productos') }}" class="mb-6">
                 <div class="flex flex-wrap justify-between items-end gap-4">
 
@@ -162,15 +193,28 @@
                 </div>
             </div>
 
-            <div class="bg-cardBg border border-gray-800 rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-white">
-                        Ventas últimos 7 días: <span id="nombreProductoGrafica"
-                            class="text-brandRed font-bold">Selecciona un producto en la tabla</span>
-                    </h3>
+            <div
+                class="bg-cardBg border border-gray-800 rounded-xl shadow-lg p-6 mb-6 flex flex-col md:flex-row gap-6 items-center">
+
+                <!-- Espacio para la imagen (Izquierda) -->
+                <div
+                    class="w-full md:w-1/4 flex flex-col items-center justify-center border border-gray-700 rounded-lg p-4 bg-darkBg h-[280px]">
+                    <img id="imagenProductoGrafica" src="{{ url_for('static', filename='img/Logo.png') }}"
+                        alt="Imagen del Producto"
+                        class="max-h-full max-w-full object-contain rounded drop-shadow-md opacity-50 transition-opacity duration-300">
                 </div>
-                <div class="relative w-full min-h-[280px]">
-                    <canvas id="productSalesChart"></canvas>
+
+                <!-- Espacio para la gráfica (Derecha) -->
+                <div class="w-full md:w-3/4 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-white">
+                            Ventas últimos 7 días: <span id="nombreProductoGrafica"
+                                class="text-brandRed font-bold">Selecciona un producto en la tabla</span>
+                        </h3>
+                    </div>
+                    <div class="relative w-full flex-1 min-h-[240px]">
+                        <canvas id="productSalesChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -210,7 +254,7 @@
                                 {% if session.get('user_rol') == 'Administrador' %}
                                 <td class="py-3 text-center">
                                     <button type="button"
-                                        onclick='abrirModalEditar({{ item.id }}, {{ item.sku | tojson }}, {{ item.nombre | tojson }}, {{ item.precio_compra | tojson }}, {{ item.precio | tojson }}); event.stopPropagation();'
+                                        onclick='abrirModalEditar({{ item.id }}, {{ item.sku | tojson }}, {{ item.nombre | tojson }}, {{ item.categoria | tojson }}, {{ item.precio_compra | tojson }}, {{ item.precio | tojson }}); event.stopPropagation();'
                                         class="text-blue-500 hover:text-blue-400 transition-colors mr-3" title="Editar">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </button>
@@ -254,8 +298,12 @@
                     const dataObj = datosVentasProductos[idProducto];
                     if (!dataObj) return;
 
-                    // 3. Cambiar el título
+                    // 3. Cambiar el título y la imagen
                     document.getElementById('nombreProductoGrafica').innerText = dataObj.nombre;
+
+                    const imgElement = document.getElementById('imagenProductoGrafica');
+                    imgElement.src = '/static/img/productos/' + dataObj.imagen;
+                    imgElement.classList.remove('opacity-50'); // Quitamos la opacidad al seleccionar uno
 
                     // 4. Dibujar la gráfica
                     const ctx = document.getElementById('productSalesChart').getContext('2d');
@@ -296,19 +344,16 @@
                 }
 
                 // --- LÓGICA PARA EL MODAL DE EDICIÓN ---
-                function abrirModalEditar(id, sku, nombre, precioCompra, precioVenta) {
-                    // Actualizar la ruta del formulario con el ID dinámico
+                function abrirModalEditar(id, sku, nombre, categoria, precioCompra, precioVenta) {
                     document.getElementById('formEditarProducto').action = `/editar_producto/${id}`;
 
-                    // Llenar los campos con los datos actuales
                     document.getElementById('edit_sku').value = sku;
                     document.getElementById('edit_nombre').value = nombre;
+                    document.getElementById('edit_categoria').value = categoria; // ASIGNAMOS LA CATEGORÍA
 
-                    // Limpiar símbolos de dólar o comas para que los inputs tipo "number" no fallen
                     document.getElementById('edit_precio_compra').value = precioCompra.replace(/[^0-9.]/g, '');
                     document.getElementById('edit_precio').value = precioVenta.replace(/[^0-9.]/g, '');
 
-                    // Mostrar el modal
                     const modal = document.getElementById('editarProductoModal');
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
@@ -339,7 +384,8 @@
                     <i class="fa-solid fa-times text-2xl"></i>
                 </button>
             </div>
-            <form action="/productos" method="POST" id="formularioPrueba" class="space-y-4">
+            <form action="/productos" method="POST" id="formularioPrueba" class="space-y-4"
+                enctype="multipart/form-data">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">SKU <span class="text-brandRed">*</span></label>
@@ -348,7 +394,7 @@
                     </div>
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Imagen</label>
-                        <input type="file" accept="image/*"
+                        <input type="file" name="imagen" accept="image/*"
                             class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-brandRed file:text-white hover:file:bg-red-700">
                     </div>
                 </div>
@@ -377,15 +423,8 @@
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Marca <span
                                 class="text-brandRed">*</span></label>
-                        <select name="marca" required
+                        <input type="text" name="marca" placeholder="Ingresa la marca" required
                             class="w-full bg-darkBg border border-gray-700 rounded p-2.5 text-sm text-white focus:border-brandRed focus:outline-none">
-                            <option value="">Seleccionar marca</option>
-                            <option value="Motul">Motul</option>
-                            <option value="Pirelli">Pirelli</option>
-                            <option value="MT Helmets">MT Helmets</option>
-                            <option value="Brembo">Brembo</option>
-                            <option value="DID">DID</option>
-                        </select>
                     </div>
                 </div>
 
@@ -496,8 +535,18 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-3 rounded-lg text-xs mt-2">
-                    <i class="fa-solid fa-circle-info mr-1"></i> La categoría, marca y existencias no pueden ser
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-1">Categoría</label>
+                    <select id="edit_categoria" name="categoria" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 focus:outline-none">
+                        {% for cat in categorias %}
+                        <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-3 rounded-lg text-xs mt-4">
+                    <i class="fa-solid fa-circle-info mr-1"></i> La marca y existencias no pueden ser
                     modificadas desde esta ventana. Para ajustar existencias, use el módulo de <b>Movimientos</b>.
                 </div>
 

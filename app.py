@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash # Para
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import extract
 from functools import wraps
+from werkzeug.utils import secure_filename
 import calendar
 import base64
 import os
@@ -36,6 +37,7 @@ class Producto(db.Model):
     precio_compra = db.Column(db.String(20), default="0") # ¡NUEVA COLUMNA!
     precio = db.Column(db.String(20)) # Este lo dejamos como Precio de Venta
     estado = db.Column(db.String(20), default='Activo')
+    imagen = db.Column(db.String(255), default='default.png')
 
 class Proveedor(db.Model):
     __tablename__ = 'proveedores'
@@ -168,8 +170,8 @@ def dashboard():
     
     # 3.3 Agrupamos corrigiendo el desfase horario
     for mov in todos_movimientos:
-        # Validamos que sea una salida
-        if mov.tipo and str(mov.tipo).strip().lower() == 'salida' and mov.fecha:
+        # Validamos que sea una salida monetaria
+        if mov.tipo and str(mov.tipo).strip().lower() in ['salida', 'salida - venta'] and mov.fecha:
             
             # ¡EL TRUCO! Restamos 5 horas a la BD para sincronizar con Colombia (-5 GMT)
             fecha_real = mov.fecha - timedelta(hours=5)
@@ -204,6 +206,17 @@ def productos():
             flash('No tienes permiso para crear productos.', 'error')
             return redirect(url_for('productos'))
         # -------------------------------
+
+        imagen_file = request.files.get('imagen')
+        filename = 'default.png' # Imagen por defecto si no suben nada
+        
+        if imagen_file and imagen_file.filename != '':
+            filename = secure_filename(imagen_file.filename)
+            # Creamos la carpeta de productos si no existe
+            ruta_carpeta = os.path.join(app.root_path, 'static', 'img', 'productos')
+            os.makedirs(ruta_carpeta, exist_ok=True)
+            imagen_file.save(os.path.join(ruta_carpeta, filename))
+        
         stock_inicial = int(request.form.get('stock', 0))
         
         nuevo_p = Producto(
@@ -214,7 +227,8 @@ def productos():
             stock=stock_inicial,
             precio_compra=request.form.get('precio_compra', '0'), # Guardamos el de compra
             precio=request.form.get('precio', '0'),               # Guardamos el de venta
-            estado=request.form.get('estado', 'Activo')
+            estado=request.form.get('estado', 'Activo'),
+            imagen=filename
         )
         db.session.add(nuevo_p)
         
@@ -282,7 +296,7 @@ def productos():
     dias_labels = [(hoy - timedelta(days=i)).strftime('%d/%m') for i in range(6, -1, -1)]
     
     # Traemos todos los movimientos de salida
-    salidas = Movimiento.query.filter(db.func.lower(Movimiento.tipo) == 'salida').all()
+    salidas = Movimiento.query.filter(db.func.lower(Movimiento.tipo).in_(['salida', 'salida - venta'])).all()
     
     datos_grafica_productos = {}
     for p in productos_filtrados:
@@ -304,7 +318,8 @@ def productos():
         datos_grafica_productos[p.id] = {
             'nombre': p.nombre,
             'labels': list(ventas_prod.keys()),
-            'data': list(ventas_prod.values())
+            'data': list(ventas_prod.values()),
+            'imagen': p.imagen or 'default.png'
         }
     
     return render_template('productos.html', 
@@ -353,13 +368,13 @@ def editar_producto(id):
     # Actualizamos únicamente los campos permitidos
     producto.sku = request.form.get('sku')
     producto.nombre = request.form.get('nombre')
+    producto.categoria = request.form.get('categoria')
     producto.precio_compra = request.form.get('precio_compra')
     producto.precio = request.form.get('precio')
     
     # Guardamos los cambios
     db.session.commit()
-    flash('Producto actualizado correctamente.', 'success')
-    
+    flash('Producto editado correctamente.', 'success')
     return redirect(url_for('productos'))
 
 @app.route('/categorias', methods=['GET', 'POST'])
@@ -383,10 +398,10 @@ def categorias():
     categorias_db = Categoria.query.all()
     productos_db = Producto.query.all()
     
-    # Buscamos los movimientos de "salida" de los últimos 30 días
+    # Buscamos los movimientos de "salida" monetaria de los últimos 30 días
     hace_30_dias = datetime.now(timezone.utc) - timedelta(days=30)
     movimientos_salida = Movimiento.query.filter(
-        db.func.lower(Movimiento.tipo) == 'salida', 
+        db.func.lower(Movimiento.tipo).in_(['salida', 'salida - venta']), 
         Movimiento.fecha >= hace_30_dias
     ).all()
     
@@ -467,33 +482,53 @@ def categorias():
     return render_template('categorias.html', resumen=resumen_cat, lista_categorias=categorias_db)
 
 @app.route('/eliminar_categoria/<int:id>', methods=['POST'])
-@admin_required
+@login_required # Añadido por seguridad
 def eliminar_categoria(id):
-    # Buscamos la categoría en la base de datos por su ID
-    categoria_a_eliminar = Categoria.query.get_or_404(id)
+    # 1. Obtener la categoría a eliminar usando SQLAlchemy
+    categoria = Categoria.query.get_or_404(id)
+    nombre_categoria = categoria.nombre
     
-    # Eliminamos el registro
-    db.session.delete(categoria_a_eliminar)
+    # 2. Verificar si existen productos con este nombre de categoría
+    cantidad_productos = Producto.query.filter_by(categoria=nombre_categoria).count()
+    
+    if cantidad_productos > 0:
+        # Si hay productos, lanzamos error y NO eliminamos
+        flash(f'Error: No se puede eliminar. Hay {cantidad_productos} productos asociados a la categoría "{nombre_categoria}".', 'error')
+        return redirect(url_for('categorias'))
+    
+    # 3. Si no hay productos, procedemos a eliminar
+    db.session.delete(categoria)
     db.session.commit()
-    
-    # Redirigimos de vuelta a la vista principal de categorías
+    flash('Categoría eliminada exitosamente.', 'success')
+        
     return redirect(url_for('categorias'))
 
 @app.route('/editar_categoria/<int:id>', methods=['POST'])
-@admin_required
+@login_required # Añadido por seguridad
 def editar_categoria(id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
+    nuevo_nombre = request.form['nombre']
+    descripcion = request.form.get('descripcion', '')
+    
+    # 1. Obtener la categoría actual desde la base de datos
     categoria = Categoria.query.get_or_404(id)
+    nombre_viejo = categoria.nombre
     
-    # Actualizar valores
-    categoria.nombre = request.form.get('nombre')
-    categoria.descripcion = request.form.get('descripcion')
+    # 2. Actualizar los datos de la categoría
+    categoria.nombre = nuevo_nombre
+    categoria.descripcion = descripcion
     
+    # 3. ACTUALIZAR LOS PRODUCTOS ASOCIADOS (Si el nombre cambió)
+    if nombre_viejo != nuevo_nombre:
+        # Buscamos todos los productos que tienen la categoría vieja
+        productos_asociados = Producto.query.filter_by(categoria=nombre_viejo).all()
+        
+        # Iteramos y les asignamos el nuevo nombre
+        for prod in productos_asociados:
+            prod.categoria = nuevo_nombre
+            
+    # Hacemos un solo commit para guardar la categoría y los productos editados
     db.session.commit()
-    flash('Categoría actualizada correctamente.', 'success')
-    
+    flash('Categoría actualizada correctamente en el inventario.', 'success')
     return redirect(url_for('categorias'))
 
 @app.route('/proveedores', methods=['GET', 'POST'])
@@ -647,6 +682,9 @@ def movimientos():
                 nombre_prod = request.form.get('item')
                 cant = int(request.form.get('cantidad_salida', 0))
                 cliente = request.form.get('proveedor_cliente')
+                
+                # NUEVO: Capturamos el motivo de la salida (por defecto 'venta')
+                motivo = request.form.get('motivo_salida', 'venta')
 
                 producto = Producto.query.filter_by(nombre=nombre_prod).first()
                 if producto:
@@ -660,15 +698,16 @@ def movimientos():
                     if producto.stock == 0:
                         producto.estado = 'Inactivo'
 
+                    # NUEVO: Guardamos el tipo de salida compuesto (Ej: "salida - venta", "salida - pérdida")
                     nuevo_mov = Movimiento(
                         item=producto.nombre,
-                        tipo='salida',
+                        tipo=f"salida - {motivo.lower()}",
                         cantidad=f"-{cant}",
                         proveedor_cliente=cliente
                     )
                     db.session.add(nuevo_mov)
                     db.session.commit()
-                    flash('Venta registrada correctamente.', 'success')
+                    flash(f'Salida por {motivo.lower()} registrada correctamente.', 'success')
 
             return redirect(url_for('movimientos'))
     
@@ -726,19 +765,27 @@ def movimientos():
 @app.route('/reportes')
 @login_required
 def reportes():
-    # 1. Opciones de Meses
-    meses_db = db.session.query(
-        extract('month', Movimiento.fecha).label('mes'),
-        extract('year', Movimiento.fecha).label('anio')
-    ).distinct().order_by('anio', 'mes').all()
-
-    opciones_meses = []
-    for m in meses_db:
-        import calendar
-        nombre_mes = calendar.month_name[int(m.mes)].capitalize()
-        opciones_meses.append({'valor': f"{int(m.anio)}-{int(m.mes):02d}", 'label': f"{nombre_mes} {int(m.anio)}"})
-
     hoy = datetime.now()
+
+    # 1. Opciones de Meses (Generamos los últimos 12 meses fijos, con o sin datos)
+    opciones_meses = []
+    meses_es = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    
+    for i in range(12): # Genera 12 meses hacia atrás. Puedes poner 24 si necesitas 2 años.
+        mes_calculado = hoy.month - i
+        anio_calculado = hoy.year
+        
+        # Ajuste matemático si retrocedemos al año anterior
+        if mes_calculado <= 0:
+            mes_calculado += 12
+            anio_calculado -= 1
+            
+        nombre_mes = meses_es[mes_calculado]
+        opciones_meses.append({
+            'valor': f"{anio_calculado}-{mes_calculado:02d}", 
+            'label': f"{nombre_mes} {anio_calculado}"
+        })
 
     # Pre-cache de precios para calcular ingresos de ventas rápidamente
     productos_all = Producto.query.all()
@@ -752,10 +799,11 @@ def reportes():
     # --- DATOS PARA GRÁFICA 1: Ventas (Unidades e Ingresos) ---
     lbl_ventas = []
     
-    # Traer todos los movimientos de salida de los últimos 30 días
+    # Traer todos los movimientos de salida de los últimos 30 días (solo ventas reales)
     hace_30 = hoy - timedelta(days=30)
     movimientos_salida = Movimiento.query.filter(
-        db.func.lower(Movimiento.tipo) == 'salida', Movimiento.fecha >= hace_30
+        db.func.lower(Movimiento.tipo).in_(['salida', 'salida - venta']), 
+        Movimiento.fecha >= hace_30
     ).all()
 
     dict_unidades = {}
@@ -880,42 +928,55 @@ def generar_reporte():
         movimientos = Movimiento.query.filter(
             extract('year', Movimiento.fecha) == anio,
             extract('month', Movimiento.fecha) == mes,
-            Movimiento.tipo == 'salida'
+            db.func.lower(Movimiento.tipo).in_(['salida', 'salida - venta']) # Solo suma ingresos reales
         ).all()
         
-        # Diccionario rápido de precios de venta
+        # Diccionario rápido de precios de venta y compra
         productos_all = Producto.query.all()
         precios_venta = {}
+        precios_compra = {}
         for p in productos_all:
-            try:
-                precios_venta[p.nombre] = float(str(p.precio).replace('$', '').replace(',', ''))
-            except:
-                precios_venta[p.nombre] = 0.0
+            try: precios_venta[p.nombre] = float(str(p.precio).replace('$', '').replace(',', ''))
+            except: precios_venta[p.nombre] = 0.0
+            
+            try: precios_compra[p.nombre] = float(str(p.precio_compra).replace('$', '').replace(',', ''))
+            except: precios_compra[p.nombre] = 0.0
 
         total_mensual = 0.0
+        ganancia_mensual = 0.0
         datos_enriquecidos = []
         
         for mov in movimientos:
             try: cant = abs(int(str(mov.cantidad).replace('-', '').replace('+', '').strip()))
             except: cant = 0
             
-            precio_u = precios_venta.get(mov.item, 0.0)
-            ingreso_total = cant * precio_u
+            precio_v = precios_venta.get(mov.item, 0.0)
+            precio_c = precios_compra.get(mov.item, 0.0)
+            
+            ingreso_total = cant * precio_v
+            costo_total = cant * precio_c
+            ganancia_total = ingreso_total - costo_total
+            
             total_mensual += ingreso_total
+            ganancia_mensual += ganancia_total
             
             # Guardamos los datos calculados para la tabla
             datos_enriquecidos.append({
                 'fecha': mov.fecha,
                 'item': mov.item,
                 'cantidad': cant,
-                'proveedor_cliente': mov.proveedor_cliente,
-                'precio_unitario': precio_u,
-                'ingreso_total': ingreso_total
+                'precio_compra': precio_c,
+                'precio_unitario': precio_v,
+                'ingreso_total': ingreso_total,
+                'ganancia_total': ganancia_total,
+                'proveedor_cliente': mov.proveedor_cliente
             })
             
         datos = datos_enriquecidos
-        columnas = ['Fecha', 'Producto', 'Cant.', 'Precio Unit.', 'Ingreso Total', 'Cliente']
-        extra_data['total_mensual'] = total_mensual # Guardamos el gran total
+        # AÑADIDAS LAS NUEVAS COLUMNAS AL ENCABEZADO
+        columnas = ['Fecha', 'Producto', 'Cant.', 'P. Compra', 'P. Venta', 'Ingreso', 'Ganancia', 'Cliente']
+        extra_data['total_mensual'] = total_mensual 
+        extra_data['ganancia_mensual'] = ganancia_mensual # Pasamos la ganancia al HTML
         
     elif tipo_reporte == 'movimientos':
         titulo = f"Historial de Movimientos - {mes:02d}/{anio}"

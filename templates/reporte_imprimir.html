@@ -68,9 +68,13 @@
                         <td style="padding: 12px; font-weight: 500;">{{ fila.item }}</td>
                         <td style="padding: 12px; color: #dc2626; font-weight: bold; text-align: center;">{{
                             fila.cantidad }}</td>
+                        <td style="padding: 12px; color: #4b5563;">${{ "{:,.2f}".format(fila.precio_compra) }}</td>
                         <td style="padding: 12px; color: #4b5563;">${{ "{:,.2f}".format(fila.precio_unitario) }}</td>
                         <td style="padding: 12px; color: #15803d; font-weight: bold;">${{
                             "{:,.2f}".format(fila.ingreso_total) }}</td>
+                        <!-- Nueva columna para ganancia en azul -->
+                        <td style="padding: 12px; color: #2563eb; font-weight: bold;">${{
+                            "{:,.2f}".format(fila.ganancia_total) }}</td>
                         <td style="padding: 12px; color: #4b5563; font-size: 12px;">{{ fila.proveedor_cliente or
                             'Consumidor Final' }}</td>
 
@@ -115,10 +119,15 @@
                 {% if tipo == 'ventas' and extra_data.total_mensual is defined %}
                 <tfoot>
                     <tr style="background-color: #f3f4f6; border-top: 2px solid #1f2937;">
-                        <td colspan="4" style="padding: 12px; text-align: right; font-weight: bold; color: #1f2937;">
-                            TOTAL RECAUDADO EN EL MES:</td>
-                        <td colspan="2" style="padding: 12px; color: #15803d; font-weight: bold; font-size: 16px;">${{
-                            "{:,.2f}".format(extra_data.total_mensual) }}</td>
+                        <td colspan="5" style="padding: 12px; text-align: right; font-weight: bold; color: #1f2937;">TOTALES DEL MES:</td>
+                        <td style="padding: 12px; color: #15803d; font-weight: bold; font-size: 15px;">
+                            <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; display: block;">Ingreso Bruto</span>
+                            ${{ "{:,.2f}".format(extra_data.total_mensual) }}
+                        </td>
+                        <td colspan="2" style="padding: 12px; color: #2563eb; font-weight: bold; font-size: 15px;">
+                            <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; display: block;">Ganancia Neta</span>
+                            ${{ "{:,.2f}".format(extra_data.ganancia_mensual) }}
+                        </td>
                     </tr>
                 </tfoot>
                 {% endif %}

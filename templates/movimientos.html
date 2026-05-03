@@ -18,7 +18,8 @@
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque" class="h-8 w-8 object-contain mr-3">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -73,19 +74,21 @@
 
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
-            
+
             <div class="flex items-center space-x-6">
                 <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
                         <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
                         <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
                     </div>
                 </div>
-                
-                <a href="/logout" class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
                 </a>
             </div>
@@ -96,7 +99,38 @@
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
+            <!-- Inicio Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
+                {% for category, message in messages %}
+                <!-- Usamos bg-green-600 para éxito y bg-brandRed para errores -->
+                <div
+                    class="toast-mensaje px-6 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 transition-opacity duration-500 transform translate-y-0 opacity-100 {{ 'bg-green-600' if category == 'success' else 'bg-brandRed' }}">
+                    {% if category == 'success' %}
+                    <i class="fa-solid fa-circle-check"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
 
+            <!-- Script para ocultar automáticamente el toast después de 4 segundos -->
+            <script>
+                setTimeout(() => {
+                    const toasts = document.querySelectorAll('.toast-mensaje');
+                    toasts.forEach(toast => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0'); // Inicia el desvanecimiento
+                        setTimeout(() => toast.remove(), 500); // Lo elimina del HTML tras la animación
+                    });
+                }, 4000); // 4000 milisegundos = 4 segundos
+            </script>
+            {% endif %}
+            {% endwith %}
+            <!-- Fin Mostrar mensajes flash -->
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium">Registrar Movimiento</h3>
                 <div class="flex space-x-4">
@@ -128,9 +162,10 @@
                             class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
                             <option value="Todos" {% if filtro_tipo=='Todos' %}selected{% endif %}>Todos</option>
                             <option value="Entrada" {% if filtro_tipo=='Entrada' %}selected{% endif %}>Entrada</option>
-                            <option value="Salida" {% if filtro_tipo=='Salida' %}selected{% endif %}>Salida</option>
-                            <option value="Ajuste" {% if filtro_tipo=='Ajuste' %}selected{% endif %}>Ajuste / Nuevo
-                            </option>
+                            <option value="Salida - Venta" {% if filtro_tipo=='Salida - Venta' %}selected{% endif %}>Salida - Venta</option>
+                            <option value="Salida - Pérdida" {% if filtro_tipo=='Salida - Pérdida' %}selected{% endif %}>Salida - Pérdida / Daño</option>
+                            <option value="Salida - Garantía" {% if filtro_tipo=='Salida - Garantía' %}selected{% endif %}>Salida - Garantía</option>
+                            <option value="Ajuste" {% if filtro_tipo=='Ajuste' %}selected{% endif %}>Ajuste / Nuevo</option>
                         </select>
                     </div>
                     <div>
@@ -176,20 +211,33 @@
                             <td class="py-4 text-white font-medium">{{ mov.item }}</td>
                             <td class="py-4">
                                 {% if mov.tipo == 'entrada' %}
-                                <span class="text-green-500 bg-green-500/10 px-2 py-1 rounded text-xs">
+                                <span class="text-green-500 bg-green-500/10 px-2 py-1 rounded text-xs font-medium">
                                     <i class="fa-solid fa-arrow-down mr-1"></i>Entrada
                                 </span>
-                                {% elif mov.tipo == 'salida' %}
-                                <span class="text-brandRed bg-brandRed/10 px-2 py-1 rounded text-xs">
-                                    <i class="fa-solid fa-arrow-up mr-1"></i>Salida
+
+                                {% elif mov.tipo == 'salida' or mov.tipo == 'salida - venta' %}
+                                <span class="text-brandRed bg-brandRed/10 px-2 py-1 rounded text-xs font-medium">
+                                    <i class="fa-solid fa-cash-register mr-1"></i>Venta
                                 </span>
+
+                                {% elif mov.tipo == 'salida - pérdida' %}
+                                <span class="text-orange-500 bg-orange-500/10 px-2 py-1 rounded text-xs font-medium">
+                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>Pérdida / Daño
+                                </span>
+
+                                {% elif mov.tipo == 'salida - garantía' %}
+                                <span class="text-purple-500 bg-purple-500/10 px-2 py-1 rounded text-xs font-medium">
+                                    <i class="fa-solid fa-rotate-left mr-1"></i>Garantía
+                                </span>
+
                                 {% elif mov.tipo == 'eliminado' %}
-                                <span class="text-gray-400 bg-gray-500/20 px-2 py-1 rounded text-xs">
+                                <span class="text-gray-400 bg-gray-500/20 px-2 py-1 rounded text-xs font-medium">
                                     <i class="fa-solid fa-trash-can mr-1"></i>Eliminado
                                 </span>
+
                                 {% else %}
-                                <span class="text-blue-500 bg-blue-500/10 px-2 py-1 rounded text-xs">
-                                    <i class="fa-solid fa-plus mr-1"></i>Nuevo
+                                <span class="text-blue-500 bg-blue-500/10 px-2 py-1 rounded text-xs font-medium">
+                                    <i class="fa-solid fa-plus mr-1"></i>Nuevo / Ajuste
                                 </span>
                                 {% endif %}
                             </td>
@@ -339,7 +387,8 @@
                 <input type="hidden" name="tipo" value="entrada">
 
                 <div class="relative">
-                    <label class="block text-sm text-gray-400 mb-1">Producto</label>
+                    <label class="block text-sm text-gray-400 mb-1">Producto <span
+                                class="text-brandRed">*</span></label>
                     <input type="text" id="busquedaProductoIngreso" name="item" autocomplete="off"
                         placeholder="Buscar producto..." required
                         class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
@@ -370,7 +419,8 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Cantidad a Ingresar</label>
+                        <label class="block text-sm text-gray-400 mb-1">Cantidad a Ingresar <span
+                                class="text-brandRed">*</span></label>
                         <input type="number" name="cantidad_ingreso" min="1" required placeholder="Ej: 10"
                             class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
                     </div>
@@ -402,14 +452,15 @@
     <div id="salidaModal" class="modal-overlay">
         <div class="modal-content bg-cardBg w-full max-w-md mx-4 rounded-xl border border-gray-700 p-6 relative">
             <h3 class="text-xl font-bold text-white mb-5 border-b border-gray-800 pb-3 flex items-center">
-                <i class="fa-solid fa-arrow-up text-brandRed mr-2"></i> Registrar Salida / Venta
+                <i class="fa-solid fa-arrow-up text-brandRed mr-2"></i> Registrar Salida de Inventario
             </h3>
 
             <form id="formSalida" action="{{ url_for('movimientos') }}" method="POST" class="space-y-4 relative">
                 <input type="hidden" name="tipo" value="salida">
 
                 <div class="relative">
-                    <label class="block text-sm text-gray-400 mb-1">Producto a Vender</label>
+                    <label class="block text-sm text-gray-400 mb-1">Producto a Retirar <span
+                                class="text-brandRed">*</span></label>
                     <input type="text" id="busquedaProductoSalida" name="item" autocomplete="off"
                         placeholder="Buscar producto..." required
                         class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
@@ -440,7 +491,8 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Cantidad a Vender</label>
+                        <label class="block text-sm text-gray-400 mb-1">Cantidad a Retirar <span
+                                class="text-brandRed">*</span></label>
                         <input type="number" id="inputCantidadSalida" name="cantidad_salida" min="1" required
                             placeholder="Ej: 2"
                             class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none transition-all">
@@ -451,11 +503,23 @@
                         </p>
                     </div>
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Cliente <span
+                        <label class="block text-sm text-gray-400 mb-1">Cliente / Responsable <span
                                 class="text-brandRed">*</span></label>
-                        <input type="text" name="proveedor_cliente" placeholder="Nombre del cliente" required
+                        <input type="text" name="proveedor_cliente" placeholder="Nombre o referencia" required
                             class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
                     </div>
+                </div>
+
+                <!-- NUEVO CAMPO: Motivo de la salida -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Motivo de Salida <span
+                            class="text-brandRed">*</span></label>
+                    <select name="motivo_salida" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
+                        <option value="Venta" selected>Venta</option>
+                        <option value="Pérdida">Pérdida / Daño</option>
+                        <option value="Garantía">Garantía</option>
+                    </select>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-800">
@@ -463,7 +527,7 @@
                         class="px-4 py-2 text-gray-400 hover:text-white transition-colors">Cancelar</button>
                     <button type="submit" id="btnGuardarVenta"
                         class="bg-brandRed hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-cash-register mr-2"></i> Confirmar Venta
+                        <i class="fa-solid fa-check mr-2"></i> Confirmar Salida
                     </button>
                 </div>
             </form>
