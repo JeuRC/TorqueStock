@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,10 +12,10 @@
             theme: {
                 extend: {
                     colors: {
-                        brandRed: '#d91b1b', 
-                        darkBg: '#0f0f0f',   
+                        brandRed: '#d91b1b',
+                        darkBg: '#0f0f0f',
                         sidebarBg: '#1a1a1a',
-                        cardBg: '#222222',   
+                        cardBg: '#222222',
                         tableRowHover: '#2a2a2a'
                     }
                 }
@@ -22,24 +23,37 @@
         }
     </script>
 </head>
+
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
         </div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-1">
-                <li><a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-house w-6"></i> Inicio</a></li>
-                <li><a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-box w-6"></i> Productos</a></li>
-                <li><a href="/categorias" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-tags w-6"></i> Categorías</a></li>
-                <li><a href="/proveedores" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-users w-6"></i> Proveedores</a></li>
-                <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
-                <li><a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
+                <li><a href="/dashboard" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-house w-6"></i> Inicio</a></li>
+                <li><a href="/productos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-box w-6"></i> Productos</a></li>
+                <li><a href="/categorias"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-tags w-6"></i> Categorías</a></li>
+                <li><a href="/proveedores"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-users w-6"></i> Proveedores</a></li>
+                <li><a href="/reportes" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-chart-bar w-6"></i> Reportes</a></li>
+                <li><a href="/movimientos"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors"><i
+                            class="fa-solid fa-arrows-spin w-6"></i> Movimientos</a></li>
                 <li>
-                    <a href="/configuracion" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                    <a href="/configuracion"
+                        class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
                 </li>
@@ -48,17 +62,26 @@
     </aside>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
+
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+
             <div class="flex items-center space-x-6">
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-user text-white"></i>
+                <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
+                        <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
+                    </div>
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                        <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
+                    </div>
                 </div>
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
-                </div>
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
+                </a>
             </div>
         </header>
 
@@ -67,14 +90,6 @@
         </div>
 
         <main class="flex-1 overflow-y-auto p-8">
-            
-            <div class="flex border-b border-gray-800 mb-8 text-sm text-gray-400">
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[UserProfile]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Preferences]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Security]</a>
-                <a href="#" class="px-4 py-2 text-white border-b-2 border-brandRed font-medium">[Roles & Permissions]</a>
-                <a href="#" class="px-4 py-2 hover:text-white transition-colors">[Notifications]</a>
-            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-cardBg border border-gray-800 rounded p-4 flex justify-between items-center">
@@ -82,7 +97,8 @@
                         <p class="text-sm text-gray-400 mb-1">Total Roles</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.total }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                 </div>
@@ -91,7 +107,8 @@
                         <p class="text-sm text-gray-400 mb-1">Administradores</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.administradores }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-regular fa-user"></i>
                     </div>
                 </div>
@@ -100,49 +117,70 @@
                         <p class="text-sm text-gray-400 mb-1">Operadores</p>
                         <p class="text-3xl font-bold text-brandRed">{{ resumen.operadores }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
+                    <div
+                        class="w-10 h-10 rounded-full border border-brandRed text-brandRed flex items-center justify-center bg-red-900/10">
                         <i class="fa-solid fa-user-group text-sm"></i>
                     </div>
                 </div>
             </div>
 
             <div class="bg-cardBg rounded border border-gray-800 p-5">
-                <h3 class="text-md font-medium mb-4 text-white">Gestión de Roles y Permisos ({{ resumen.total }} roles)</h3>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-md font-medium text-white">Gestión de Roles y Permisos ({{ resumen.total }} roles)
+                    </h3>
+                    <button
+                        onclick="document.getElementById('nuevoUsuarioModal').classList.remove('hidden'); document.getElementById('nuevoUsuarioModal').classList.add('flex');"
+                        class="bg-brandRed hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors flex items-center glow-button">
+                        <i class="fa-solid fa-user-plus mr-2"></i> Añadir Nuevo Usuario
+                    </button>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="text-gray-400 border-b border-gray-700">
-                                <th class="pb-3 font-medium">Rol</th>
-                                <th class="pb-3 font-medium">Descripción</th>
-                                <th class="pb-3 font-medium">Permisos Clave</th>
-                                <th class="pb-3 font-medium">Miembros Asignados</th>
-                                <th class="pb-3 font-medium">Estado</th>
+                                <th class="pb-3 font-medium">Usuario / Correo</th>
+                                <th class="pb-3 font-medium">Nivel de Acceso</th>
+                                <th class="pb-3 font-medium text-center">Rol Asignado</th>
+                                <th class="pb-3 font-medium text-center">Estado</th>
                                 <th class="pb-3 font-medium text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for rol in roles %}
+                            {% for user in roles %}
                             <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
-                                <td class="py-4 text-white">{{ rol.rol }}</td>
-                                <td class="py-4 text-gray-400">{{ rol.descripcion }}</td>
-                                <td class="py-4 text-gray-300">
-                                    {{ rol.icono_permiso | safe }}
-                                    {{ rol.permisos | safe }}
-                                </td>
-                                <td class="py-4 text-white">
-                                    <div class="flex items-center">
-                                        {{ rol.icono_miembros | safe }}
-                                        <span>{{ rol.miembros }}</span>
-                                    </div>
-                                </td>
+                                <td class="py-4 text-white font-medium">{{ user.username }}</td>
                                 <td class="py-4">
-                                    <span class="bg-gray-800 text-gray-300 px-3 py-1 rounded text-xs border border-gray-600">{{ rol.estado }}</span>
+                                    {% if user.rol == 'Administrador' %}
+                                    <span class="text-blue-400 text-sm"><i class="fa-solid fa-shield-halved mr-1"></i>
+                                        Control Total</span>
+                                    {% else %}
+                                    <span class="text-gray-400 text-sm"><i class="fa-solid fa-box mr-1"></i>
+                                        Operativa</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 text-center">
+                                    <span
+                                        class="bg-gray-800 px-3 py-1 rounded-full text-xs text-white border border-gray-600">{{
+                                        user.rol }}</span>
+                                </td>
+                                <td class="py-4 text-center">
+                                    <span class="text-green-500 text-sm"><i
+                                            class="fa-solid fa-circle text-[10px] mr-1"></i>Activo</span>
                                 </td>
                                 <td class="py-4 text-center">
                                     <div class="flex justify-center gap-3 text-brandRed">
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-pen-to-square"></i></button>
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-trash-can"></i></button>
-                                        <button class="hover:text-red-400 transition-colors"><i class="fa-regular fa-eye"></i></button>
+                                        {% if session.get('user_id') != user.id %}
+                                        <form action="{{ url_for('eliminar_usuario', id=user.id) }}" method="POST"
+                                            onsubmit="return confirm('¿Estás seguro de eliminar este usuario del sistema?');">
+                                            <button type="submit" class="hover:text-red-400 transition-colors"
+                                                title="Eliminar Usuario">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-gray-600 text-xs italic"
+                                            title="No puedes eliminarte a ti mismo">Tú</span>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -157,8 +195,74 @@
                 <span class="px-2 text-white">1</span>
                 <button class="hover:text-white px-2"><i class="fa-solid fa-angle-right"></i></button>
             </div>
+            <div id="nuevoUsuarioModal"
+                class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center backdrop-blur-sm transition-opacity">
+                <div class="bg-cardBg w-full max-w-md mx-4 rounded-xl border border-gray-700 p-6 relative shadow-2xl">
+                    <h3 class="text-xl font-bold text-white mb-5 border-b border-gray-800 pb-3 flex items-center">
+                        <i class="fa-solid fa-shield-halved text-brandRed mr-2"></i> Crear Usuario
+                    </h3>
 
+                    <form action="/configuracion" method="POST" class="space-y-4 relative">
+
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Correo Electrónico (Usuario) <span
+                                    class="text-brandRed">*</span></label>
+                            <div class="relative">
+                                <i class="fa-regular fa-envelope absolute left-3 top-3 text-gray-500"></i>
+                                <input type="email" name="nuevo_usuario" placeholder="ejemplo@torquebikers.com" required
+                                    class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 pl-9 text-white focus:border-brandRed focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Contraseña de Acceso <span
+                                    class="text-brandRed">*</span></label>
+                            <div class="relative">
+                                <i class="fa-solid fa-key absolute left-3 top-3 text-gray-500"></i>
+                                <input type="password" name="nueva_password" placeholder="Mínimo 6 caracteres" required
+                                    minlength="6"
+                                    class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 pl-9 text-white focus:border-brandRed focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Asignar Rol <span
+                                    class="text-brandRed">*</span></label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label
+                                    class="border border-gray-700 rounded-lg p-3 flex flex-col items-center cursor-pointer hover:border-brandRed transition-colors bg-darkBg">
+                                    <input type="radio" name="rol" value="Operador" checked
+                                        class="mb-2 text-brandRed focus:ring-brandRed">
+                                    <i class="fa-solid fa-box text-xl text-gray-400 mb-1"></i>
+                                    <span class="text-sm font-medium">Operador</span>
+                                    <span class="text-xs text-gray-500 text-center mt-1">Solo inventario</span>
+                                </label>
+
+                                <label
+                                    class="border border-gray-700 rounded-lg p-3 flex flex-col items-center cursor-pointer hover:border-brandRed transition-colors bg-darkBg">
+                                    <input type="radio" name="rol" value="Administrador"
+                                        class="mb-2 text-brandRed focus:ring-brandRed">
+                                    <i class="fa-solid fa-crown text-xl text-brandRed mb-1"></i>
+                                    <span class="text-sm font-medium">Administrador</span>
+                                    <span class="text-xs text-gray-500 text-center mt-1">Acceso Total</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-800 mt-2">
+                            <button type="button"
+                                onclick="document.getElementById('nuevoUsuarioModal').classList.add('hidden'); document.getElementById('nuevoUsuarioModal').classList.remove('flex');"
+                                class="px-4 py-2 text-gray-400 hover:text-white transition-colors">Cancelar</button>
+                            <button type="submit"
+                                class="bg-brandRed hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                                <i class="fa-solid fa-check mr-2"></i> Guardar Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
 </body>
+
 </html>

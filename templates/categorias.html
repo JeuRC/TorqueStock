@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categorías - TorqueStock</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/categorias.css') }}">
-    
+
     <script src="{{ url_for('static', filename='js/categorias.js') }}"></script>
 </head>
+
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
 
     <aside class="w-64 bg-sidebarBg flex flex-col h-full border-r border-gray-800">
         <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo Torque"
+                class="h-8 w-8 object-contain mr-3">
             <h1 class="text-lg font-bold text-white tracking-wide">
                 <span class="text-brandRed">TORQUE</span> BIKERS
             </h1>
@@ -33,7 +37,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/categorias" class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
+                    <a href="/categorias"
+                        class="flex items-center px-6 py-3 bg-brandRed text-white rounded-r-full mr-4">
                         <i class="fa-solid fa-tags w-6"></i> Categorías
                     </a>
                 </li>
@@ -49,53 +54,101 @@
                 </li>
                 <li>
                     <a href="/movimientos" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
-                        <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos    
+                        <i class="fa-solid fa-arrows-spin w-6"></i> Movimientos
                     </a>
                 </li>
+                {% if session.get('user_rol') == 'Administrador' %}
                 <li>
-                    <a href="/configuracion" class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
+                    <a href="/configuracion"
+                        class="flex items-center px-6 py-3 hover:bg-tableRowHover transition-colors">
                         <i class="fa-solid fa-gear w-6"></i> Configuración
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </nav>
     </aside>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
+
         <header class="h-16 flex justify-between items-center px-8 border-b border-gray-800">
             <div class="text-sm text-gray-400">Sistema de Gestión de Inventario</div>
+
             <div class="flex items-center space-x-6">
-                <div class="text-sm text-gray-300">Admin</div>
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-user text-white"></i>
+                <div class="flex items-center gap-3 border-r border-gray-700 pr-6">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm text-white font-medium">{{ session.get('username', 'Usuario') }}</p>
+                        <p class="text-xs text-brandRed">{{ session.get('user_rol', 'Rol') }}</p>
+                    </div>
+                    <div
+                        class="w-9 h-9 rounded-full bg-gray-800 border border-brandRed flex items-center justify-center">
+                        <i class="fa-solid fa-user-astronaut text-white text-sm"></i>
+                    </div>
                 </div>
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                    <input type="text" placeholder="Buscar" class="bg-cardBg border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-48">
-                </div>
+
+                <a href="/logout"
+                    class="text-gray-400 hover:text-brandRed transition-colors flex items-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i> <span class="hidden sm:inline">Salir</span>
+                </a>
             </div>
         </header>
 
-    <div class="bg-brandRed text-white px-8 py-3 shadow-md">
-        <h2 class="text-xl font-semibold">Gestión de Categorías</h2>
-    </div>
+        <div class="bg-brandRed text-white px-8 py-3 shadow-md">
+            <h2 class="text-xl font-semibold">Gestión de Categorías</h2>
+        </div>
 
         <main class="flex-1 overflow-y-auto p-8">
-            
+
+            <!-- Inicio Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
+                    {% for category, message in messages %}
+                    <!-- Usamos bg-green-600 para éxito y bg-brandRed para errores -->
+                    <div class="toast-mensaje px-6 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 transition-opacity duration-500 transform translate-y-0 opacity-100 {{ 'bg-green-600' if category == 'success' else 'bg-brandRed' }}">
+                        {% if category == 'success' %}
+                            <i class="fa-solid fa-circle-check"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Script para ocultar automáticamente el toast después de 4 segundos -->
+                <script>
+                    setTimeout(() => {
+                        const toasts = document.querySelectorAll('.toast-mensaje');
+                        toasts.forEach(toast => {
+                            toast.classList.remove('opacity-100');
+                            toast.classList.add('opacity-0'); // Inicia el desvanecimiento
+                            setTimeout(() => toast.remove(), 500); // Lo elimina del HTML tras la animación
+                        });
+                    }, 4000); // 4000 milisegundos = 4 segundos
+                </script>
+                {% endif %}
+            {% endwith %}
+            <!-- Fin Mostrar mensajes flash -->
+
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex items-center gap-4 w-full md:w-auto">
-                    <button class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
+                    {% if session.get('user_rol') == 'Administrador' %}
+                    <button onclick="openModal('registrarCategoriaModal')"
+                        class="bg-brandRed text-white px-4 py-2 rounded text-sm font-medium glow-button flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Añadir Nueva Categoria
                     </button>
+                    {% endif %}
                     <div class="relative hidden sm:block">
                         <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-                        <input type="text" placeholder="Buscar categoría..." class="bg-darkBg border border-gray-700 rounded py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-64">
+                        <input type="text" placeholder="Buscar categoría..."
+                            class="buscar-categoria bg-darkBg border border-gray-700 rounded py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-brandRed text-white w-64">
                     </div>
                 </div>
                 <div class="flex items-center gap-2 text-sm w-full md:w-auto justify-end">
                     <span class="text-gray-400">Ordenar por</span>
-                    <select class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none focus:border-brandRed">
+                    <select id="ordenarSelect"
+                        class="bg-darkBg border border-gray-700 rounded py-1.5 px-3 text-white focus:outline-none focus:border-brandRed">
                         <option>Nombre (A-Z)</option>
                         <option>Nombre (Z-A)</option>
                     </select>
@@ -130,30 +183,56 @@
                                 <th class="pb-3 font-medium">Descripción</th>
                                 <th class="pb-3 font-medium">Cantidad de Productos</th>
                                 <th class="pb-3 font-medium">Valor Total</th>
-                                <th class="pb-3 font-medium">Acciones</th>
+                                {% if session.get('user_rol') == 'Administrador' %}
+                                <th class="pb-3 font-medium text-center">Acciones</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
-                            {% for cat in categorias %}
+                            {% for cat in lista_categorias %}
                             <tr class="border-b border-gray-800 hover:bg-tableRowHover transition-colors">
-                                <td class="py-4 text-gray-400">{{ cat.id }}</td>
-                                <td class="py-4 text-white">{{ cat.nombre }}</td>
-                                <td class="py-4">{{ cat.descripcion }}</td>
-                                <td class="py-4">
-                                    <span class="{{ 'text-brandRed' if cat.alerta else 'text-white' }}">
-                                        {{ cat.cantidad }} 
-                                        {% if cat.alerta %}
-                                            <i class="fa-solid fa-arrow-down text-brandRed ml-1"></i>
-                                            <br><span class="text-xs bg-red-900/40 px-1 rounded">{{ cat.detalle_alerta }}</span>
-                                        {% endif %}
-                                    </span>
+                                <td class="py-4 text-gray-400">
+                                    <span class="bg-gray-800 px-2 py-1 rounded text-xs">C{{ "%03d"|format(cat.id)
+                                        }}</span>
                                 </td>
-                                <td class="py-4 text-white">{{ cat.valor }}</td>
-                                <td class="py-4">
-                                    <div class="flex gap-3 text-gray-500">
-                                        <button class="hover:text-white transition-colors"><i class="fa-regular fa-pen-to-square"></i></button>
-                                        <button class="hover:text-brandRed transition-colors"><i class="fa-regular fa-trash-can"></i></button>
-                                    </div>
+
+                                <td class="py-4 text-white font-medium">{{ cat.nombre }}</td>
+
+                                <td class="py-4 text-gray-400 text-sm">
+                                    {{ cat.descripcion if cat.descripcion else 'Sin descripción' }}
+                                </td>
+
+                                <td class="py-4 text-white text-sm">
+                                    {{ cat.cantidad_productos }} productos
+                                </td>
+
+                                <td class="py-4 text-green-400 font-mono text-sm">
+                                    ${{ "{:,.2f}".format(cat.valor_total) }}
+                                </td>
+                                {% if session.get('user_rol') == 'Administrador' %}
+                                <td class="py-4 text-center">
+                                    <button type="button"
+                                        onclick='abrirModalEditarCat({{ cat.id }}, {{ cat.nombre | tojson }}, {{ cat.descripcion | tojson }})'
+                                        class="text-blue-500 hover:text-blue-400 transition-colors mr-3" title="Editar">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+
+                                    <form action="{{ url_for('eliminar_categoria', id=cat.id) }}" method="POST"
+                                        class="inline"
+                                        onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="text-brandRed hover:text-red-400 transition-colors"
+                                            title="Eliminar">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-gray-500">
+                                    <i class="fa-solid fa-folder-open text-3xl mb-2 opacity-50 block"></i>
+                                    No hay categorías registradas aún.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -164,17 +243,134 @@
 
             <div class="flex justify-center mt-6">
                 <div class="flex items-center gap-1 bg-cardBg rounded border border-gray-800 p-1">
-                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-left text-xs"></i></button>
-                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-left text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i
+                            class="fa-solid fa-angles-left text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i
+                            class="fa-solid fa-angle-left text-xs"></i></button>
                     <button class="px-3 py-1 bg-brandRed text-white rounded">1</button>
                     <button class="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded">2</button>
                     <button class="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded">3</button>
-                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angle-right text-xs"></i></button>
-                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i class="fa-solid fa-angles-right text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i
+                            class="fa-solid fa-angle-right text-xs"></i></button>
+                    <button class="px-3 py-1 text-gray-500 hover:text-white"><i
+                            class="fa-solid fa-angles-right text-xs"></i></button>
                 </div>
             </div>
 
         </main>
     </div>
+
+    <!-- Modal para Registrar Nueva Categoría -->
+    <div id="registrarCategoriaModal" class="modal-overlay">
+
+        <div
+            class="modal-content bg-cardBg w-full max-w-md mx-4 rounded-xl border border-gray-700 shadow-2xl p-6 relative">
+
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-800">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <i class="fa-solid fa-tags text-brandRed mr-2"></i> Nueva Categoría
+                </h3>
+                <button type="button" onclick="closeModal('registrarCategoriaModal')"
+                    class="text-gray-500 hover:text-brandRed transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="formCategoria" action="{{ url_for('categorias') }}" method="POST" class="space-y-4">
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Nombre de la Categoría <span
+                            class="text-brandRed">*</span></label>
+                    <input type="text" name="nombre" id="nombreCategoria" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all"
+                        placeholder="Ej: Cascos, Aceites...">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Descripción</label>
+                    <textarea name="descripcion" id="descripcionCategoria" rows="3"
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all resize-none"
+                        placeholder="Describa la categoría..."></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 mt-2">
+                    <button type="button" onclick="closeModal('registrarCategoriaModal')"
+                        class="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white rounded-lg text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="glow-button px-4 py-2 bg-brandRed hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i class="fa-solid fa-save mr-2"></i> Guardar
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <script>
+        function abrirModalEditarCat(id, nombre, descripcion) {
+            // Actualizar la ruta del formulario
+            document.getElementById('formEditarCategoria').action = `/editar_categoria/${id}`;
+
+            // Llenar los inputs
+            document.getElementById('edit_nombreCategoria').value = nombre;
+            // Si la descripción es nula, mostramos vacío
+            document.getElementById('edit_descripcionCategoria').value = descripcion || '';
+
+            // Mostrar modal
+            const modal = document.getElementById('editarCategoriaModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModalEditarCat() {
+            const modal = document.getElementById('editarCategoriaModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+    <div id="editarCategoriaModal"
+        class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-cardBg w-full max-w-md mx-4 rounded-xl border border-gray-700 shadow-2xl p-6 relative">
+
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-800">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <i class="fa-regular fa-pen-to-square text-brandRed mr-2"></i> Editar Categoría
+                </h3>
+                <button type="button" onclick="cerrarModalEditarCat()"
+                    class="text-gray-500 hover:text-brandRed transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="formEditarCategoria" method="POST" class="space-y-4">
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Nombre de la Categoría <span
+                            class="text-brandRed">*</span></label>
+                    <input type="text" name="nombre" id="edit_nombreCategoria" required
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Descripción</label>
+                    <textarea name="descripcion" id="edit_descripcionCategoria" rows="3"
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-brandRed focus:ring-1 focus:ring-brandRed focus:outline-none transition-all resize-none"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 mt-2 border-t border-gray-800">
+                    <button type="button" onclick="cerrarModalEditarCat()"
+                        class="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white rounded-lg text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="glow-button px-4 py-2 bg-brandRed hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i class="fa-solid fa-save mr-2"></i> Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>
