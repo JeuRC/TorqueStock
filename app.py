@@ -319,7 +319,7 @@ def productos():
             'nombre': p.nombre,
             'labels': list(ventas_prod.keys()),
             'data': list(ventas_prod.values()),
-            'imagen': p.imagen or 'default.png'
+            'imagen': f"productos/{p.imagen}" if p.imagen and p.imagen != 'default.png' else "Logo.png"
         }
     
     return render_template('productos.html', 
@@ -371,6 +371,16 @@ def editar_producto(id):
     producto.categoria = request.form.get('categoria')
     producto.precio_compra = request.form.get('precio_compra')
     producto.precio = request.form.get('precio')
+    nuevo_estado = request.form.get('estado')
+    if nuevo_estado:
+        producto.estado = nuevo_estado
+    imagen_file = request.files.get('imagen')
+    if imagen_file and imagen_file.filename != '':
+        filename = secure_filename(imagen_file.filename)
+        ruta_carpeta = os.path.join(app.root_path, 'static', 'img', 'productos')
+        os.makedirs(ruta_carpeta, exist_ok=True)
+        imagen_file.save(os.path.join(ruta_carpeta, filename))
+        producto.imagen = filename
     
     # Guardamos los cambios
     db.session.commit()

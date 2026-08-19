@@ -254,7 +254,7 @@
                                 {% if session.get('user_rol') == 'Administrador' %}
                                 <td class="py-3 text-center">
                                     <button type="button"
-                                        onclick='abrirModalEditar({{ item.id }}, {{ item.sku | tojson }}, {{ item.nombre | tojson }}, {{ item.categoria | tojson }}, {{ item.precio_compra | tojson }}, {{ item.precio | tojson }}); event.stopPropagation();'
+                                        onclick='abrirModalEditar({{ item.id }}, {{ item.sku | tojson }}, {{ item.nombre | tojson }}, {{ item.categoria | tojson }}, {{ item.precio_compra | tojson }}, {{ item.precio | tojson }}, {{ item.estado | tojson }}); event.stopPropagation();'
                                         class="text-blue-500 hover:text-blue-400 transition-colors mr-3" title="Editar">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </button>
@@ -302,7 +302,7 @@
                     document.getElementById('nombreProductoGrafica').innerText = dataObj.nombre;
 
                     const imgElement = document.getElementById('imagenProductoGrafica');
-                    imgElement.src = '/static/img/productos/' + dataObj.imagen;
+                    imgElement.src = '/static/img/' + dataObj.imagen;
                     imgElement.classList.remove('opacity-50'); // Quitamos la opacidad al seleccionar uno
 
                     // 4. Dibujar la gráfica
@@ -344,15 +344,21 @@
                 }
 
                 // --- LÓGICA PARA EL MODAL DE EDICIÓN ---
-                function abrirModalEditar(id, sku, nombre, categoria, precioCompra, precioVenta) {
+                function abrirModalEditar(id, sku, nombre, categoria, precioCompra, precioVenta, estado) {
                     document.getElementById('formEditarProducto').action = `/editar_producto/${id}`;
 
                     document.getElementById('edit_sku').value = sku;
                     document.getElementById('edit_nombre').value = nombre;
-                    document.getElementById('edit_categoria').value = categoria; // ASIGNAMOS LA CATEGORÍA
-
+                    document.getElementById('edit_categoria').value = categoria;
                     document.getElementById('edit_precio_compra').value = precioCompra.replace(/[^0-9.]/g, '');
                     document.getElementById('edit_precio').value = precioVenta.replace(/[^0-9.]/g, '');
+
+                    // Validar y seleccionar el estado actual del producto
+                    if (estado === 'Inactivo') {
+                        document.getElementById('edit_estado_inactivo').checked = true;
+                    } else {
+                        document.getElementById('edit_estado_activo').checked = true;
+                    }
 
                     const modal = document.getElementById('editarProductoModal');
                     modal.classList.remove('hidden');
@@ -371,6 +377,78 @@
                     if (primerFila) {
                         primerFila.click();
                     }
+                });
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Interceptar Enter en inputs de SKU para evitar envío prematuro
+                    const inputsSKU = document.querySelectorAll('input[name="sku"]');
+                    inputsSKU.forEach(input => {
+                        input.addEventListener('keydown', function (e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault(); // Bloquea el submit del formulario
+                                // Enfoca el input del Nombre del Producto
+                                const form = this.closest('form');
+                                if (form) {
+                                    const inputNombre = form.querySelector('input[name="nombre"]');
+                                    if (inputNombre) inputNombre.focus();
+                                }
+                            }
+                        });
+                    });
+                });
+                function habilitarLectorBarras(inputId, listaId, nameInputCantidad) {
+                    const inputBusqueda = document.getElementById(inputId);
+                    if (!inputBusqueda) return;
+
+                    inputBusqueda.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // Evitamos que envíe el formulario 'Ingreso/Salida'
+
+                            const codigoEscaneado = this.value.trim().toLowerCase();
+                            if (!codigoEscaneado) return;
+
+                            // Buscamos dentro del div de sugerencias
+                            const listaProductos = document.getElementById(listaId);
+                            const opciones = listaProductos.querySelectorAll('div[onmousedown]');
+                            let productoEncontrado = false;
+
+                            opciones.forEach(opcion => {
+                                // Buscamos si el texto de la opción incluye el SKU escaneado
+                                if (opcion.innerText.toLowerCase().includes(`sku: ${codigoEscaneado}`)) {
+                                    productoEncontrado = true;
+
+                                    // Disparamos el evento mousedown para ejecutar tu lógica existente
+                                    const eventoClick = new MouseEvent('mousedown', {
+                                        bubbles: true, cancelable: true, view: window
+                                    });
+                                    opcion.dispatchEvent(eventoClick);
+
+                                    // Pasamos el foco al campo de cantidad automáticamente
+                                    const form = this.closest('form');
+                                    const inputCantidad = form.querySelector(`input[name="${nameInputCantidad}"]`);
+                                    if (inputCantidad) {
+                                        inputCantidad.focus();
+                                    }
+                                }
+                            });
+
+                            if (!productoEncontrado) {
+                                // Usamos clases de Tailwind para dar feedback visual de error
+                                this.classList.add('border-brandRed', 'ring-1', 'ring-brandRed');
+                                setTimeout(() => {
+                                    this.classList.remove('border-brandRed', 'ring-1', 'ring-brandRed');
+                                    this.value = ''; // Limpiamos para nuevo escaneo
+                                }, 1000);
+                            }
+                        }
+                    });
+                }
+
+                // Inicializar los listeners
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Activa el lector para el modal de Ingreso
+                    habilitarLectorBarras('busquedaProductoIngreso', 'listaProductosIngreso', 'cantidad_ingreso');
+                    // Activa el lector para el modal de Salida
+                    habilitarLectorBarras('busquedaProductoSalida', 'listaProductosSalida', 'cantidad_salida');
                 });
             </script>
         </main>
@@ -497,7 +575,7 @@
                 </button>
             </div>
 
-            <form id="formEditarProducto" method="POST" class="space-y-4">
+            <form id="formEditarProducto" method="POST" class="space-y-4" enctype="multipart/form-data">
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -543,6 +621,28 @@
                         <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
                         {% endfor %}
                     </select>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-1">Actualizar Imagen (Opcional)</label>
+                    <input type="file" name="imagen" accept="image/*"
+                        class="w-full bg-darkBg border border-gray-700 rounded-lg p-2 text-sm text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-brandRed file:text-white hover:file:bg-red-700">
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-1">Estado del Producto</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" id="edit_estado_activo" name="estado" value="Activo"
+                                class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
+                            <span class="text-sm">Activo</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" id="edit_estado_inactivo" name="estado" value="Inactivo"
+                                class="mr-2 text-brandRed focus:ring-brandRed bg-darkBg border-gray-700">
+                            <span class="text-sm">Inactivo</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-3 rounded-lg text-xs mt-4">

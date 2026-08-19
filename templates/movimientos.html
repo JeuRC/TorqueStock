@@ -574,6 +574,23 @@
                 boton.disabled = false;
             }
         }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Interceptar Enter en inputs de SKU para evitar envío prematuro
+            const inputsSKU = document.querySelectorAll('input[name="sku"]');
+            inputsSKU.forEach(input => {
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Bloquea el submit del formulario
+                        // Enfoca el input del Nombre del Producto
+                        const form = this.closest('form');
+                        if (form) {
+                            const inputNombre = form.querySelector('input[name="nombre"]');
+                            if (inputNombre) inputNombre.focus();
+                        }
+                    }
+                });
+            });
+        });
     </script>
 </body>
 
