@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movimientos - TorqueStock</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/tailwindcss.js') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/movimientos.css') }}">
@@ -162,10 +162,14 @@
                             class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-white">
                             <option value="Todos" {% if filtro_tipo=='Todos' %}selected{% endif %}>Todos</option>
                             <option value="Entrada" {% if filtro_tipo=='Entrada' %}selected{% endif %}>Entrada</option>
-                            <option value="Salida - Venta" {% if filtro_tipo=='Salida - Venta' %}selected{% endif %}>Salida - Venta</option>
-                            <option value="Salida - Pérdida" {% if filtro_tipo=='Salida - Pérdida' %}selected{% endif %}>Salida - Pérdida / Daño</option>
-                            <option value="Salida - Garantía" {% if filtro_tipo=='Salida - Garantía' %}selected{% endif %}>Salida - Garantía</option>
-                            <option value="Ajuste" {% if filtro_tipo=='Ajuste' %}selected{% endif %}>Ajuste / Nuevo</option>
+                            <option value="Salida - Venta" {% if filtro_tipo=='Salida - Venta' %}selected{% endif %}>
+                                Salida - Venta</option>
+                            <option value="Salida - Pérdida" {% if filtro_tipo=='Salida - Pérdida' %}selected{% endif
+                                %}>Salida - Pérdida / Daño</option>
+                            <option value="Salida - Garantía" {% if filtro_tipo=='Salida - Garantía' %}selected{% endif
+                                %}>Salida - Garantía</option>
+                            <option value="Ajuste" {% if filtro_tipo=='Ajuste' %}selected{% endif %}>Ajuste / Nuevo
+                            </option>
                         </select>
                     </div>
                     <div>
@@ -385,10 +389,11 @@
             </h3>
             <form id="formIngreso" action="{{ url_for('movimientos') }}" method="POST" class="space-y-4 relative">
                 <input type="hidden" name="tipo" value="entrada">
+                <input type="hidden" id="skuProductoIngreso" name="sku_producto">
 
                 <div class="relative">
                     <label class="block text-sm text-gray-400 mb-1">Producto <span
-                                class="text-brandRed">*</span></label>
+                            class="text-brandRed">*</span></label>
                     <input type="text" id="busquedaProductoIngreso" name="item" autocomplete="off"
                         placeholder="Buscar producto..." required
                         class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">
@@ -457,10 +462,11 @@
 
             <form id="formSalida" action="{{ url_for('movimientos') }}" method="POST" class="space-y-4 relative">
                 <input type="hidden" name="tipo" value="salida">
+                <input type="hidden" id="skuProductoSalida" name="sku_producto">
 
                 <div class="relative">
                     <label class="block text-sm text-gray-400 mb-1">Producto a Retirar <span
-                                class="text-brandRed">*</span></label>
+                            class="text-brandRed">*</span></label>
                     <input type="text" id="busquedaProductoSalida" name="item" autocomplete="off"
                         placeholder="Buscar producto..." required
                         class="w-full bg-darkBg border border-gray-700 rounded-lg p-2.5 text-white focus:border-brandRed focus:outline-none">

@@ -651,63 +651,59 @@ def movimientos():
             return redirect(url_for('movimientos'))
 
         # --- CASO 2: ENTRADA O SALIDA DE PRODUCTO EXISTENTE ---
-        item_nombre = request.form.get('item')
-        producto = Producto.query.filter_by(nombre=item_nombre).first()
+        if tipo_mov in ['entrada', 'salida']:
+            # 1. Buscamos por el SKU exacto proveniente del input oculto
+            item_sku = request.form.get('sku_producto', '').strip()
+            
+            # Buscamos el producto garantizando que es exactamente el que el usuario eligió
+            producto = Producto.query.filter_by(sku=item_sku).first()
 
-        if producto:
-            # Determinamos la cantidad según el modal abierto
+            # Validación de seguridad por si envían el formulario vacío
+            if not producto:
+                flash('Error: No se ha seleccionado un producto válido del catálogo.', 'error')
+                return redirect(url_for('movimientos'))
+
             if tipo_mov == 'entrada':
-                nombre_prod = request.form.get('item')
                 cant = int(request.form.get('cantidad_ingreso', 0))
                 proveedor = request.form.get('proveedor_cliente')
 
-                producto = Producto.query.filter_by(nombre=nombre_prod).first()
-                if producto:
-                    producto.stock += cant
-                    # Al ingresar stock, el producto vuelve a estar Activo
-                    if producto.stock > 0:
-                        producto.estado = 'Activo'
+                producto.stock += cant
+                if producto.stock > 0:
+                    producto.estado = 'Activo'
 
-                    nuevo_mov = Movimiento(
-                        item=producto.nombre,
-                        tipo='entrada',
-                        cantidad=f"+{cant}",
-                        proveedor_cliente=proveedor
-                    )
-                    db.session.add(nuevo_mov)
-                    db.session.commit()
-                    flash('Ingreso registrado correctamente.', 'success')
+                nuevo_mov = Movimiento(
+                    item=producto.nombre, # Seguimos guardando el nombre en el historial
+                    tipo='entrada',
+                    cantidad=f"+{cant}",
+                    proveedor_cliente=proveedor
+                )
+                db.session.add(nuevo_mov)
+                db.session.commit()
+                flash('Ingreso registrado correctamente.', 'success')
 
             elif tipo_mov == 'salida':
-                nombre_prod = request.form.get('item')
                 cant = int(request.form.get('cantidad_salida', 0))
                 cliente = request.form.get('proveedor_cliente')
-                
-                # NUEVO: Capturamos el motivo de la salida (por defecto 'venta')
                 motivo = request.form.get('motivo_salida', 'venta')
 
-                producto = Producto.query.filter_by(nombre=nombre_prod).first()
-                if producto:
-                    # VALIDACIÓN CRÍTICA: No permitir vender más del stock disponible
-                    if cant > producto.stock:
-                        flash(f'Error: Solo hay {producto.stock} existencias de {producto.nombre}.', 'error')
-                        return redirect(url_for('movimientos'))
+                # Validación de stock en el backend (doble seguridad)
+                if cant > producto.stock:
+                    flash(f'Error: Solo hay {producto.stock} existencias del SKU {producto.sku}.', 'error')
+                    return redirect(url_for('movimientos'))
 
-                    producto.stock -= cant
-                    # Si el stock llega a 0, se inactiva automáticamente
-                    if producto.stock == 0:
-                        producto.estado = 'Inactivo'
+                producto.stock -= cant
+                if producto.stock == 0:
+                    producto.estado = 'Inactivo'
 
-                    # NUEVO: Guardamos el tipo de salida compuesto (Ej: "salida - venta", "salida - pérdida")
-                    nuevo_mov = Movimiento(
-                        item=producto.nombre,
-                        tipo=f"salida - {motivo.lower()}",
-                        cantidad=f"-{cant}",
-                        proveedor_cliente=cliente
-                    )
-                    db.session.add(nuevo_mov)
-                    db.session.commit()
-                    flash(f'Salida por {motivo.lower()} registrada correctamente.', 'success')
+                nuevo_mov = Movimiento(
+                    item=producto.nombre, # Seguimos guardando el nombre en el historial
+                    tipo=f"salida - {motivo.lower()}",
+                    cantidad=f"-{cant}",
+                    proveedor_cliente=cliente
+                )
+                db.session.add(nuevo_mov)
+                db.session.commit()
+                flash(f'Salida por {motivo.lower()} registrada correctamente.', 'success')
 
             return redirect(url_for('movimientos'))
     

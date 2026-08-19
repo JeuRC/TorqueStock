@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categorías - TorqueStock</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/tailwindcss.js') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/categorias.css') }}">
@@ -101,33 +101,34 @@
 
             <!-- Inicio Mostrar mensajes flash -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
-                    {% for category, message in messages %}
-                    <!-- Usamos bg-green-600 para éxito y bg-brandRed para errores -->
-                    <div class="toast-mensaje px-6 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 transition-opacity duration-500 transform translate-y-0 opacity-100 {{ 'bg-green-600' if category == 'success' else 'bg-brandRed' }}">
-                        {% if category == 'success' %}
-                            <i class="fa-solid fa-circle-check"></i>
-                        {% else %}
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                        {% endif %}
-                        {{ message }}
-                    </div>
-                    {% endfor %}
+            {% if messages %}
+            <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
+                {% for category, message in messages %}
+                <!-- Usamos bg-green-600 para éxito y bg-brandRed para errores -->
+                <div
+                    class="toast-mensaje px-6 py-3 rounded shadow-lg text-white font-medium flex items-center gap-2 transition-opacity duration-500 transform translate-y-0 opacity-100 {{ 'bg-green-600' if category == 'success' else 'bg-brandRed' }}">
+                    {% if category == 'success' %}
+                    <i class="fa-solid fa-circle-check"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {% endif %}
+                    {{ message }}
                 </div>
-                
-                <!-- Script para ocultar automáticamente el toast después de 4 segundos -->
-                <script>
-                    setTimeout(() => {
-                        const toasts = document.querySelectorAll('.toast-mensaje');
-                        toasts.forEach(toast => {
-                            toast.classList.remove('opacity-100');
-                            toast.classList.add('opacity-0'); // Inicia el desvanecimiento
-                            setTimeout(() => toast.remove(), 500); // Lo elimina del HTML tras la animación
-                        });
-                    }, 4000); // 4000 milisegundos = 4 segundos
-                </script>
-                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Script para ocultar automáticamente el toast después de 4 segundos -->
+            <script>
+                setTimeout(() => {
+                    const toasts = document.querySelectorAll('.toast-mensaje');
+                    toasts.forEach(toast => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0'); // Inicia el desvanecimiento
+                        setTimeout(() => toast.remove(), 500); // Lo elimina del HTML tras la animación
+                    });
+                }, 4000); // 4000 milisegundos = 4 segundos
+            </script>
+            {% endif %}
             {% endwith %}
             <!-- Fin Mostrar mensajes flash -->
 
