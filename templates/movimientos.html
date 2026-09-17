@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/movimientos.css') }}">
 
     <script src="{{ url_for('static', filename='js/movimientos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/escaner_global.js') }}"></script>
 </head>
 
 <body class="bg-darkBg text-gray-300 font-sans h-screen flex overflow-hidden">
@@ -591,6 +592,97 @@
                 });
             });
         });
+    </script>
+    <div id="scanDecisionModal"
+        class="hidden fixed inset-0 bg-black/80 z-[150] items-center justify-center backdrop-blur-sm transition-opacity">
+        <div
+            class="modal-content bg-cardBg w-full max-w-md mx-4 rounded-xl border border-brandRed shadow-[0_0_30px_rgba(217,27,27,0.2)] p-8 relative text-center">
+            <div class="mb-5 flex justify-center">
+                <div
+                    class="w-20 h-20 rounded-full bg-darkBg border-2 border-brandRed flex items-center justify-center text-brandRed">
+                    <i class="fa-solid fa-barcode text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2">Producto Escaneado</h3>
+            <p id="scanDecisionNombre" class="text-brandRed font-medium text-lg mb-1"></p>
+            <p id="scanDecisionSKU" class="text-sm text-gray-400 mb-6"></p>
+
+            <p class="text-sm text-gray-300 mb-4">¿Qué acción deseas registrar?</p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="ejecutarAccionEscaner('entrada')"
+                    class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl font-medium transition-all flex flex-col items-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-arrow-down text-2xl"></i>
+                    Ingreso
+                </button>
+                <button onclick="ejecutarAccionEscaner('salida')"
+                    class="bg-brandRed hover:bg-red-700 text-white p-4 rounded-xl font-medium transition-all flex flex-col items-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-arrow-up text-2xl"></i>
+                    Salida
+                </button>
+            </div>
+            <button onclick="cerrarDecisionModal()"
+                class="mt-6 text-gray-500 hover:text-white text-sm transition-colors">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        let productoEscaneadoData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scanAccion = sessionStorage.getItem('autoScanAccion');
+            const scanDataStr = sessionStorage.getItem('autoScanData');
+
+            if (scanAccion === 'existente' && scanDataStr) {
+                productoEscaneadoData = JSON.parse(scanDataStr);
+
+                // Rellenar datos en la interfaz de decisión
+                document.getElementById('scanDecisionNombre').innerText = productoEscaneadoData.nombre;
+                document.getElementById('scanDecisionSKU').innerText = `SKU: ${productoEscaneadoData.sku} | Stock Actual: ${productoEscaneadoData.stock}`;
+
+                // Mostrar modal
+                const modal = document.getElementById('scanDecisionModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                sessionStorage.removeItem('autoScanAccion');
+                sessionStorage.removeItem('autoScanData');
+            }
+        });
+
+        function cerrarDecisionModal() {
+            const modal = document.getElementById('scanDecisionModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function ejecutarAccionEscaner(tipo) {
+            cerrarDecisionModal();
+
+            if (tipo === 'entrada') {
+                openModal('ingresoModal');
+                // Auto-llenar el input visible que espera el backend
+                document.getElementById('busquedaProductoIngreso').value = productoEscaneadoData.nombre;
+                // Opcional: mostrar la caja de detalles visualmente si tienes la función, sino solo llenamos el input.
+                if (typeof seleccionarProductoIngreso === 'function') {
+                    seleccionarProductoIngreso(productoEscaneadoData.nombre, productoEscaneadoData.sku, productoEscaneadoData.stock, productoEscaneadoData.precio);
+                }
+                setTimeout(() => document.querySelector('input[name="cantidad_ingreso"]').focus(), 150);
+
+            } else if (tipo === 'salida') {
+                openModal('salidaModal');
+                // Auto-llenar el input visible que espera el backend
+                document.getElementById('busquedaProductoSalida').value = productoEscaneadoData.nombre;
+
+                if (typeof seleccionarProductoSalida === 'function') {
+                    seleccionarProductoSalida(productoEscaneadoData.nombre, productoEscaneadoData.sku, productoEscaneadoData.stock, productoEscaneadoData.precio);
+                }
+                if (typeof configurarStockMaximo === 'function') {
+                    configurarStockMaximo(productoEscaneadoData.stock);
+                }
+                setTimeout(() => document.getElementById('inputCantidadSalida').focus(), 150);
+            }
+        }
     </script>
 </body>
 

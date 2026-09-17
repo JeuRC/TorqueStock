@@ -5,6 +5,9 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import extract
 from functools import wraps
 from werkzeug.utils import secure_filename
+from flask import jsonify
+from threading import Timer
+import webbrowser
 import calendar
 import base64
 import os
@@ -30,6 +33,7 @@ class Producto(db.Model):
     __tablename__ = 'producto' # Opcional, pero buena práctica
     id = db.Column(db.Integer, primary_key=True)
     sku = db.Column(db.String(20), nullable=False)
+    codigo_barras = db.Column(db.String(50), unique=True, nullable=True)
     nombre = db.Column(db.String(100), nullable=False)
     categoria = db.Column(db.String(50))
     marca = db.Column(db.String(50))
@@ -129,6 +133,20 @@ def logout():
     session.clear() # Borra todos los datos de la sesión actual
     return redirect(url_for('login'))
 
+@app.route('/api/escanear/<string:codigo>')
+@login_required
+def escanear_codigo(codigo):
+    producto = Producto.query.filter_by(codigo_barras=codigo).first()
+    if producto:
+        return jsonify({
+            'existe': True,
+            'nombre': producto.nombre,
+            'sku': producto.sku,
+            'stock': producto.stock,
+            'precio': producto.precio
+        })
+    return jsonify({'existe': False, 'codigo': codigo})
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -207,6 +225,19 @@ def productos():
             return redirect(url_for('productos'))
         # -------------------------------
 
+        sku_ingresado = request.form.get('sku')
+        codigo_ingresado = request.form.get('codigo_barras') # Asegúrate de que el name en HTML coincida
+
+        # 1. Validar si el SKU o Código ya existen ANTES de guardar
+        producto_existente = Producto.query.filter(
+            (Producto.sku == sku_ingresado) | 
+            (Producto.codigo_barras == codigo_ingresado)
+        ).first()
+
+        if producto_existente:
+            flash('Error: El SKU o Código de barras ya se encuentra registrado en el sistema.', 'error')
+            return redirect(url_for('productos'))
+
         imagen_file = request.files.get('imagen')
         filename = 'default.png' # Imagen por defecto si no suben nada
         
@@ -221,6 +252,7 @@ def productos():
         
         nuevo_p = Producto(
             sku=request.form.get('sku'),
+            codigo_barras=request.form.get('codigo_barras'),
             nombre=request.form.get('nombre'),
             categoria=request.form.get('categoria'),
             marca=request.form.get('marca'),
@@ -362,11 +394,11 @@ def editar_producto(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # Buscamos el producto en la base de datos
     producto = Producto.query.get_or_404(id)
     
     # Actualizamos únicamente los campos permitidos
     producto.sku = request.form.get('sku')
+    producto.codigo_barras = request.form.get('codigo_barras')
     producto.nombre = request.form.get('nombre')
     producto.categoria = request.form.get('categoria')
     producto.precio_compra = request.form.get('precio_compra')
@@ -1051,5 +1083,18 @@ def eliminar_usuario(id):
     
     return redirect(url_for('configuracion'))
 
+@app.route('/imprimir_etiqueta/<int:id>')
+@login_required
+def imprimir_etiqueta(id):
+    producto = Producto.query.get_or_404(id)
+    if not producto.codigo_barras:
+        flash('Este producto no tiene un código de barras asignado.', 'error')
+        return redirect(url_for('productos'))
+    return render_template('etiqueta_termica.html', producto=producto)
+
+def abrir_navegador():
+    webbrowser.open_new('http://127.0.0.1:5000/')
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    Timer(1.2, abrir_navegador).start()
+    app.run(host='0.0.0.0', port=5000, debug=False)
