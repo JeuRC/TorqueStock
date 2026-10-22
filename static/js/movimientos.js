@@ -1,4 +1,3 @@
-// Configuración de los colores corporativos para Tailwind CDN
 tailwind.config = {
     theme: {
         extend: {
@@ -33,9 +32,10 @@ window.onclick = function(event) {
 }
 
 window.seleccionarProductoIngreso = function(nombre, sku, stock, precio) {
-    // 1. Asignar el valor al input
     const inputBusqueda = document.getElementById('busquedaProductoIngreso');
     inputBusqueda.value = nombre;
+    
+    document.getElementById('skuProductoIngreso').value = sku;
     
     // 2. Mostrar la tarjeta de información
     const infoDiv = document.getElementById('infoProductoIngreso');
@@ -48,7 +48,6 @@ window.seleccionarProductoIngreso = function(nombre, sku, stock, precio) {
     
     infoDiv.classList.remove('hidden');
     
-    // 3. Ocultar la lista INMEDIATAMENTE
     document.getElementById('listaProductosIngreso').classList.add('hidden');
 }
 
@@ -56,12 +55,14 @@ window.seleccionarProductoSalida = function(nombre, sku, stock, precio) {
     const inputBusqueda = document.getElementById('busquedaProductoSalida');
     inputBusqueda.value = nombre;
     
+    document.getElementById('skuProductoSalida').value = sku;
+    
     const infoDiv = document.getElementById('infoProductoSalida');
     const detalleDiv = document.getElementById('detalleProductoSalida');
     
     detalleDiv.innerHTML = `
         <p class="text-white font-medium">${nombre}</p>
-        <p class="text-xs text-gray-400 mt-1">SKU: <span class="text-white">${sku}</span> | Disponible: <span class="text-white">${stock}</span> | Precio: <span class="text-white">${precio}</span></p>
+        <p class="text-xs text-gray-400 mt-1">SKU: <span class="text-white">${sku}</span> | Disponible: <span class="text-green-400 font-bold">${stock}</span> | Precio: <span class="text-white">${precio}</span></p>
     `;
     
     infoDiv.classList.remove('hidden');
@@ -163,42 +164,6 @@ function configurarFiltroBuscador(inputId, listaId) {
     });
 }
 
-// 2. Funciones para actualizar la UI cuando se selecciona un producto
-function seleccionarProductoIngreso(nombre, sku, stock, precio) {
-    // Llenamos el input con el nombre exacto para que el backend lo reconozca
-    document.getElementById('busquedaProductoIngreso').value = nombre;
-    document.getElementById('skuProductoIngreso').value = sku;
-    document.getElementById('listaProductosIngreso').classList.add('hidden');
-    
-    // Mostramos la tarjeta con el detalle visual del producto
-    const infoDiv = document.getElementById('infoProductoIngreso');
-    const detalleDiv = document.getElementById('detalleProductoIngreso');
-    
-    detalleDiv.innerHTML = `
-        <p class="text-sm text-white font-medium">${nombre}</p>
-        <p class="text-xs text-gray-400">SKU: ${sku} | Stock Actual: <span class="font-bold">${stock}</span></p>
-    `;
-    infoDiv.classList.remove('hidden');
-}
-
-function seleccionarProductoSalida(nombre, sku, stock, precio) {
-    // Llenamos el input con el nombre exacto
-    document.getElementById('busquedaProductoSalida').value = nombre;
-    document.getElementById('skuProductoSalida').value = sku;
-    document.getElementById('listaProductosSalida').classList.add('hidden');
-    
-    // Mostramos la tarjeta con el detalle visual
-    const infoDiv = document.getElementById('infoProductoSalida');
-    const detalleDiv = document.getElementById('detalleProductoSalida');
-    
-    detalleDiv.innerHTML = `
-        <p class="text-sm text-white font-medium">${nombre}</p>
-        <p class="text-xs text-gray-400">SKU: ${sku} | Disponible: <span class="text-green-400 font-bold">${stock}</span></p>
-    `;
-    infoDiv.classList.remove('hidden');
-}
-
-// 3. Inicializar los eventos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     configurarFiltroBuscador('busquedaProductoIngreso', 'listaProductosIngreso');
     configurarFiltroBuscador('busquedaProductoSalida', 'listaProductosSalida');
